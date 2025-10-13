@@ -35,7 +35,7 @@ const MagicDashboardRedirect = () => {
           <Image src={Link} alt="link-icon" className="ml-[6px] my-auto" />
         </button>
       </div>
-      <DevLinks />
+      {/* <DevLinks /> */}
     </div>
   );
 };

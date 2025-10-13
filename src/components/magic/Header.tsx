@@ -14,7 +14,7 @@ const Header = () => {
           Solana
         </div>
       </div>
-      <DevLinks />
+      {/* <DevLinks /> */}
     </div>
   );
 };

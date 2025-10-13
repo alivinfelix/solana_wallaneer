@@ -19,7 +19,6 @@ export default function Dashboard({ token, setToken }: LoginProps) {
         <WalletMethods token={token} setToken={setToken} />
         <Spacer size={15} />
       </div>
-      <DevLinks primary />
     </div>
   );
 }

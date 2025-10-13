@@ -114,7 +114,7 @@ const SendTransaction = () => {
   return (
     <Card>
       <CardHeader id="send-transaction">Send Transaction</CardHeader>
-      <div>
+      {/* <div>
         <FormButton onClick={handleAirdrop} disabled={airdropLoading}>
           {airdropLoading ? (
             <div className="w-full loading-container">
@@ -125,7 +125,7 @@ const SendTransaction = () => {
           )}
         </FormButton>
         <Divider />
-      </div>
+      </div> */}
 
       <FormInput
         value={toAddress}
