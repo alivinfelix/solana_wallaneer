@@ -7,6 +7,7 @@ import CardHeader from '@/components/ui/CardHeader'
 import {LoginMethod} from '@/utils/common'
 import GetIdToken from '../wallet-methods/GetIdToken'
 import GetMetadata from '../wallet-methods/GetMetadata'
+import RevealPrivateKey from '../wallet-methods/RevealPrivateKey'
 
 import UpdateEmail from '../wallet-methods/UpdateEmail'
 
@@ -28,6 +29,8 @@ const WalletMethods = ({token, setToken}: LoginProps) => {
 			<Divider />
 			<GetMetadata />
 			<Divider />
+			<RevealPrivateKey />
+      		<Divider />
 			<Disconnect token={token} setToken={setToken} />
 		</Card>
 	)
