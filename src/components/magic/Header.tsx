@@ -11,7 +11,7 @@ const Header = () => {
           Wallaneer
         </div>
         <div className="text-center text-base font-normal font-['SF Mono'] leading-normal" style={{ color: '#e2db42' }}>
-          Demo
+          Solana
         </div>
       </div>
       <DevLinks />
