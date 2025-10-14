@@ -16,7 +16,7 @@ const MagicDashboardRedirect = () => {
         <Image src={Logo} alt="logo" />
         <div className="text-center text-white text-xl font-extrabold font-['Inter'] leading-[30px]">Magic</div>
         <div className="text-center text-white text-opacity-50 text-base font-normal font-['SF Mono'] leading-normal">
-          Solana
+          {/* Solana */}
         </div>
       </div>
       <div className="flex flex-col items-center flex-1">

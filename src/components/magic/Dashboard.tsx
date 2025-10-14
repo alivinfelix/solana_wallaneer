@@ -6,6 +6,7 @@ import { LoginProps } from '@/utils/types';
 import UserInfo from './cards/UserInfoCard';
 import DevLinks from './DevLinks';
 import Header from './Header';
+import NetworkSwitcher from './NetworkSwitcher';
 
 export default function Dashboard({ token, setToken }: LoginProps) {
   return (
@@ -13,6 +14,15 @@ export default function Dashboard({ token, setToken }: LoginProps) {
       <Header />
       <div className="cards-container">
         <UserInfo token={token} setToken={setToken} />
+        <Spacer size={10} />
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title">Network</h3>
+          </div>
+          <div className="card-content">
+            <NetworkSwitcher />
+          </div>
+        </div>
         <Spacer size={10} />
         <SendTransaction />
         <Spacer size={10} />
