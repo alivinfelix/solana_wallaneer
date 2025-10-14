@@ -9,6 +9,7 @@ import CardLabel from '@/components/ui/CardLabel';
 import Spinner from '@/components/ui/Spinner';
 import { getNetworkName } from '@/utils/network';
 import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import showToast from '@/utils/showToast';
 
 const UserInfo = ({ token, setToken }: LoginProps) => {
   const { magic, connection, isEthereum, isSolana, currentNetwork } = useMagic();
@@ -16,6 +17,7 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
   const [balance, setBalance] = useState('...');
   const [copied, setCopied] = useState('Copy');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRevealingKey, setIsRevealingKey] = useState(false);
 
   const [publicAddress, setPublicAddress] = useState(localStorage.getItem('user'));
 
@@ -122,6 +124,27 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
     }
   }, [copied, publicAddress]);
 
+  const handleRevealKey = useCallback(async () => {
+    if (!magic) return;
+    
+    try {
+      setIsRevealingKey(true);
+      const privateKey = await magic.user.revealPrivateKey();
+      console.log('Private Key: ' + privateKey);
+      showToast({
+        message: 'Private key revealed in wallet',
+        type: 'success',
+      });
+    } catch (error: any) {
+      showToast({
+        message: error.message || 'Failed to reveal private key',
+        type: 'error',
+      });
+    } finally {
+      setIsRevealingKey(false);
+    }
+  }, [magic]);
+
   return (
     <Card>
       <CardHeader id="Wallet">Wallet</CardHeader>
@@ -147,6 +170,20 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
         }
       />
       <div className="code">{balance} {isSolana ? 'SOL' : 'ETH'}</div>
+      <Divider />
+      <CardLabel leftHeader="Security" />
+      <div className="mt-2">
+        <button 
+          onClick={handleRevealKey} 
+          disabled={isRevealingKey || !magic}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+        >
+          {isRevealingKey ? 'Revealing...' : 'Reveal Private Key'}
+        </button>
+        <p className="text-sm text-gray-500 mt-1">
+          Reveals your private key in a secure window
+        </p>
+      </div>
     </Card>
   );
 };

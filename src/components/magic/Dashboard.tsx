@@ -26,7 +26,7 @@ export default function Dashboard({ token, setToken }: LoginProps) {
         <Spacer size={10} />
         <SendTransaction />
         <Spacer size={10} />
-        <WalletMethods token={token} setToken={setToken} />
+        {/* <WalletMethods token={token} setToken={setToken} /> */}
         <Spacer size={15} />
       </div>
     </div>
