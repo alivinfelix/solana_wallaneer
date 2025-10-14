@@ -11,9 +11,10 @@ import showToast from '@/utils/showToast';
 import Spinner from '@/components/ui/Spinner';
 import Spacer from '@/components/ui/Spacer';
 import TransactionHistory from '@/components/ui/TransactionHistory';
+import { Network } from '@/utils/network';
 
 const SendTransaction = () => {
-  const { magic, connection, isEthereum, isSolana } = useMagic();
+  const { magic, connection, isEthereum, isSolana, isBitcoin, currentNetwork } = useMagic();
   const [toAddress, setToAddress] = useState('');
   const [amount, setAmount] = useState('');
   const [disabled, setDisabled] = useState(!toAddress || !amount);
@@ -50,25 +51,54 @@ const SendTransaction = () => {
     }
   }, [connection]);
 
+  // Helper function to get the currency symbol based on the current network
+  const getCurrencySymbol = useCallback(() => {
+    if (isSolana) return 'SOL';
+    if (isEthereum) return 'ETH';
+    if (isBitcoin) return 'BTC';
+    return '';
+  }, [isSolana, isEthereum, isBitcoin]);
+
+  // Validate address based on blockchain
+  const validateAddress = useCallback((address: string): boolean => {
+    if (isSolana) {
+      try {
+        const pubkey = new PublicKey(address);
+        return PublicKey.isOnCurve(pubkey.toBuffer());
+      } catch {
+        return false;
+      }
+    } else if (isEthereum) {
+      return /^0x[a-fA-F0-9]{40}$/.test(address);
+    } else if (isBitcoin) {
+      // Basic Bitcoin address validation (P2PKH, P2SH, Bech32)
+      return (
+        /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(address) || // P2PKH, P2SH
+        /^bc1[ac-hj-np-z02-9]{39,59}$/.test(address) // Bech32
+      );
+    }
+    return false;
+  }, [isSolana, isEthereum, isBitcoin]);
+
   const sendTransaction = useCallback(async () => {
     if (isNaN(Number(amount))) {
       return setAmountError(true);
     }
+
+    // Validate address
+    if (!validateAddress(toAddress)) {
+      return setToAddressError(true);
+    }
+
     setDisabled(true);
 
     try {
       setTransactionLoadingLoading(true);
       
-      if (isSolana && connection) {
+      if (isSolana && connection && magic) {
         // Solana transaction
         const userPublicKey = new PublicKey(publicAddress as string);
         const receiverPublicKey = new PublicKey(toAddress as string);
-        
-        if (!PublicKey.isOnCurve(receiverPublicKey.toBuffer())) {
-          setTransactionLoadingLoading(false);
-          setDisabled(false);
-          return setToAddressError(true);
-        }
         
         const hash = await connection.getLatestBlockhash();
         if (!hash) return;
@@ -89,7 +119,7 @@ const SendTransaction = () => {
 
         transaction.add(transfer);
 
-        const signedTransaction = await magic?.solana.signTransaction(transaction, {
+        const signedTransaction = await magic.solana.signTransaction(transaction, {
           requireAllSignatures: false,
           verifySignatures: true,
         });
@@ -105,13 +135,6 @@ const SendTransaction = () => {
         });
       } else if (isEthereum && magic) {
         // Ethereum transaction
-        // Validate Ethereum address
-        if (!/^0x[a-fA-F0-9]{40}$/.test(toAddress)) {
-          setTransactionLoadingLoading(false);
-          setDisabled(false);
-          return setToAddressError(true);
-        }
-        
         const provider = magic.rpcProvider;
         
         // Convert ETH to Wei (1 ETH = 10^18 Wei)
@@ -137,6 +160,31 @@ const SendTransaction = () => {
           message: `Transaction successful hash: ${txnHash}`,
           type: 'success',
         });
+      } else if (isBitcoin && magic && magic.bitcoin) {
+        // Bitcoin transaction
+        try {
+          // Convert BTC to satoshis (1 BTC = 100,000,000 satoshis)
+          const satoshis = Math.round(Number(amount) * 100000000);
+          console.log('Bitcoin amount in satoshis:', satoshis);
+          
+          const txnHash = await magic.bitcoin.sendTransaction({
+            to: toAddress,
+            amount: satoshis,
+          });
+          
+          setHash(txnHash);
+          showToast({
+            message: `Transaction successful hash: ${txnHash}`,
+            type: 'success',
+          });
+        } catch (error: any) {
+          console.error('Bitcoin transaction error:', error);
+          showToast({
+            message: error.message || 'Bitcoin transaction failed',
+            type: 'error',
+          });
+          throw error; // Re-throw to be caught by the outer catch block
+        }
       }
       
       setTransactionLoadingLoading(false);
@@ -151,7 +199,7 @@ const SendTransaction = () => {
       showToast({ message: e.message || 'Transaction failed', type: 'error' });
       console.log(e);
     }
-  }, [connection, amount, publicAddress, toAddress, magic, isEthereum, isSolana]);
+  }, [connection, amount, publicAddress, toAddress, magic, isEthereum, isSolana, isBitcoin, validateAddress]);
 
   return (
     <Card>
@@ -175,7 +223,7 @@ const SendTransaction = () => {
         placeholder="Receiving Address"
       />
       {toAddressError ? <ErrorText>Invalid address</ErrorText> : null}
-      <FormInput value={amount} onChange={(e: any) => setAmount(e.target.value)} placeholder={`Amount (${isSolana ? 'SOL' : 'ETH'})`} />
+      <FormInput value={amount} onChange={(e: any) => setAmount(e.target.value)} placeholder={`Amount (${getCurrencySymbol()})`} />
       {amountError ? <ErrorText className="error">Invalid amount</ErrorText> : null}
       <FormButton onClick={sendTransaction} disabled={!toAddress || !amount || disabled}>
         {transactionLoading ? (

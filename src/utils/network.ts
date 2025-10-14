@@ -3,6 +3,8 @@ export enum Network {
   SOLANA_MAINNET_BETA = 'solana-mainnet',
   ETHEREUM_SEPOLIA = 'ethereum-sepolia',
   ETHEREUM_MAINNET = 'ethereum-mainnet',
+  BITCOIN_MAINNET = 'bitcoin-mainnet',
+  BITCOIN_TESTNET = 'bitcoin-testnet',
 }
 
 export const getNetworkUrl = (network?: Network) => {
@@ -16,6 +18,10 @@ export const getNetworkUrl = (network?: Network) => {
       return 'https://eth-sepolia.g.alchemy.com/v2/demo';
     case Network.ETHEREUM_MAINNET:
       return 'https://eth-mainnet.g.alchemy.com/v2/uRHNx98oapmdwfnEUO_BTKx8eY5A5w4C';
+    case Network.BITCOIN_MAINNET:
+      return 'https://bitcoin-rpc.publicnode.com';
+    case Network.BITCOIN_TESTNET:
+      return 'https://btc.getblock.io/testnet';
     default:
       throw new Error('Network not supported');
   }
@@ -32,6 +38,10 @@ export const getNetworkName = (network?: Network) => {
       return 'Ethereum (Sepolia)';
     case Network.ETHEREUM_MAINNET:
       return 'Ethereum (Mainnet)';
+    case Network.BITCOIN_MAINNET:
+      return 'Bitcoin (Mainnet)';
+    case Network.BITCOIN_TESTNET:
+      return 'Bitcoin (Testnet)';
     default:
       return 'Unknown Network';
   }
@@ -48,6 +58,10 @@ export const getBlockExplorer = (address: string, network?: Network) => {
       return `https://sepolia.etherscan.io/address/${address}`;
     case Network.ETHEREUM_MAINNET:
       return `https://etherscan.io/address/${address}`;
+    case Network.BITCOIN_MAINNET:
+      return `https://www.blockchain.com/explorer/addresses/btc/${address}`;
+    case Network.BITCOIN_TESTNET:
+      return `https://www.blockchain.com/explorer/addresses/btc-testnet/${address}`;
     default:
       return '';
   }

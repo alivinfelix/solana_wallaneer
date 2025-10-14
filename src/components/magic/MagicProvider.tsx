@@ -3,6 +3,7 @@ import { OAuthExtension } from '@magic-ext/oauth';
 import { Magic } from 'magic-sdk';
 import { ReactNode, createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { SolanaExtension } from '@magic-ext/solana';
+import { BitcoinExtension } from '@magic-ext/bitcoin';
 import { Connection } from '@solana/web3.js';
 import { Network } from '@/utils/network';
 
@@ -17,6 +18,7 @@ type MagicContextType = {
   connection: Connection | null;
   isEthereum: boolean;
   isSolana: boolean;
+  isBitcoin: boolean;
   switchNetwork: (network: Network) => void;
   currentNetwork: Network;
 };
@@ -26,16 +28,18 @@ const MagicContext = createContext<MagicContextType>({
   connection: null,
   isEthereum: false,
   isSolana: true,
+  isBitcoin: false,
   switchNetwork: () => {},
-  currentNetwork: Network.SOLANA_DEVNET,
+  currentNetwork: Network.SOLANA_MAINNET_BETA,
 });
 
 export const useMagic = () => useContext(MagicContext);
 
 const MagicProvider = ({ children }: { children: ReactNode }) => {
-  // Store both Magic instances
+  // Store Magic instances for each blockchain
   const [solanaMagic, setSolanaMagic] = useState<AnyMagicType | null>(null);
   const [ethereumMagic, setEthereumMagic] = useState<AnyMagicType | null>(null);
+  const [bitcoinMagic, setBitcoinMagic] = useState<AnyMagicType | null>(null);
   // Active magic instance based on current network
   const [magic, setMagic] = useState<AnyMagicType | null>(null);
   const [connection, setConnection] = useState<Connection | null>(null);
@@ -50,8 +54,12 @@ const MagicProvider = ({ children }: { children: ReactNode }) => {
   const isSolana = useMemo(() => {
     return currentNetwork === Network.SOLANA_DEVNET || currentNetwork === Network.SOLANA_MAINNET_BETA;
   }, [currentNetwork]);
+  
+  const isBitcoin = useMemo(() => {
+    return currentNetwork === Network.BITCOIN_MAINNET || currentNetwork === Network.BITCOIN_TESTNET;
+  }, [currentNetwork]);
 
-  // Initialize both Magic instances once
+  // Initialize all Magic instances once
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_MAGIC_API_KEY) {
       // Initialize Solana Magic instance
@@ -70,6 +78,18 @@ const MagicProvider = ({ children }: { children: ReactNode }) => {
         extensions: [new OAuthExtension()],
       });
       setEthereumMagic(ethereumInstance);
+      
+      // Initialize Bitcoin Magic instance
+      const bitcoinInstance = new Magic(process.env.NEXT_PUBLIC_MAGIC_API_KEY as string, {
+        extensions: [
+          new OAuthExtension(),
+          new BitcoinExtension({
+            rpcUrl: getNetworkUrl(Network.BITCOIN_MAINNET),
+            network: 'mainnet', // or 'testnet'
+          }),
+        ],
+      });
+      setBitcoinMagic(bitcoinInstance);
     }
   }, []);
   
@@ -88,8 +108,11 @@ const MagicProvider = ({ children }: { children: ReactNode }) => {
       // Create Solana connection
       const connection = new Connection(getNetworkUrl(currentNetwork));
       setConnection(connection);
+    } else if (isBitcoin && bitcoinMagic) {
+      setMagic(bitcoinMagic);
+      setConnection(null); // No Solana connection for Bitcoin
     }
-  }, [currentNetwork, isEthereum, isSolana, ethereumMagic, solanaMagic]);
+  }, [currentNetwork, isEthereum, isSolana, isBitcoin, ethereumMagic, solanaMagic, bitcoinMagic]);
 
   const value = useMemo(() => {
     return {
@@ -97,10 +120,11 @@ const MagicProvider = ({ children }: { children: ReactNode }) => {
       connection,
       isEthereum,
       isSolana,
+      isBitcoin,
       switchNetwork,
       currentNetwork,
     };
-  }, [magic, connection, isEthereum, isSolana, currentNetwork]);
+  }, [magic, connection, isEthereum, isSolana, isBitcoin, currentNetwork]);
 
   return <MagicContext.Provider value={value}>{children}</MagicContext.Provider>;
 };

@@ -8,11 +8,13 @@ import CardHeader from '@/components/ui/CardHeader';
 import CardLabel from '@/components/ui/CardLabel';
 import Spinner from '@/components/ui/Spinner';
 import { getNetworkName } from '@/utils/network';
+import { Network } from '@/utils/network';
 import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import showToast from '@/utils/showToast';
+import TokenBalance from '../tokens/TokenBalance';
 
 const UserInfo = ({ token, setToken }: LoginProps) => {
-  const { magic, connection, isEthereum, isSolana, currentNetwork } = useMagic();
+  const { magic, connection, isEthereum, isSolana, isBitcoin, currentNetwork } = useMagic();
 
   const [balance, setBalance] = useState('...');
   const [copied, setCopied] = useState('Copy');
@@ -85,8 +87,29 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
         console.error('Error getting Ethereum balance:', error);
         setBalance('Error');
       }
+    } else if (isBitcoin) {
+      // Get Bitcoin balance
+      try {
+        if (magic && magic.rpcProvider) {
+          // Get the user's Bitcoin address
+          const metadata = await magic.user.getInfo();
+          const btcAddress = metadata.publicAddress;
+          
+          // Use Bitcoin RPC to get the balance
+          // Default to 0 for now as we need a proper Bitcoin RPC implementation
+          console.log('Bitcoin address:', btcAddress);
+          setBalance('0');
+        } else {
+          // If RPC provider is not available, set to 0
+          setBalance('0');
+          console.log('Bitcoin RPC provider not available, setting balance to 0');
+        }
+      } catch (error) {
+        console.error('Error getting Bitcoin balance:', error);
+        setBalance('0'); // Set to 0 on error for better UX
+      }
     }
-  }, [connection, publicAddress, isEthereum, isSolana, magic]);
+  }, [connection, publicAddress, isEthereum, isSolana, isBitcoin, magic]);
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -97,10 +120,10 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
   }, [getBalance]);
 
   useEffect(() => {
-    if ((connection && isSolana) || (magic && isEthereum)) {
+    if ((connection && isSolana) || (magic && isEthereum) || (magic && isBitcoin)) {
       refresh();
     }
-  }, [connection, magic, isSolana, isEthereum, refresh]);
+  }, [connection, magic, isSolana, isEthereum, isBitcoin, refresh]);
 
   useEffect(() => {
     setBalance('...');
@@ -123,6 +146,14 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
       }, 1000);
     }
   }, [copied, publicAddress]);
+
+  // Get the currency symbol based on the current network
+  const getCurrencySymbol = () => {
+    if (isSolana) return 'SOL';
+    if (isEthereum) return 'ETH';
+    if (isBitcoin) return 'BTC';
+    return '';
+  };
 
   const handleRevealKey = useCallback(async () => {
     if (!magic) return;
@@ -169,7 +200,12 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
           )
         }
       />
-      <div className="code">{balance} {isSolana ? 'SOL' : 'ETH'}</div>
+      <div className="code">{balance} {getCurrencySymbol()}</div>
+      <Divider />
+      <CardLabel leftHeader="Assets" />
+      <div className="mt-3">
+        <TokenBalance publicAddress={publicAddress !== 'Fetching address...' ? publicAddress || undefined : undefined} />
+      </div>
       <Divider />
       <CardLabel leftHeader="Security" />
       <div className="mt-2">

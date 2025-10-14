@@ -9,8 +9,10 @@
     "lint": "next lint --fix"
   },
   "dependencies": {
+    "@magic-ext/bitcoin": "^26.0.0",
     "@magic-ext/oauth": "^23.0.3",
     "@magic-ext/solana": "^17.0.0",
+    "@solana/spl-token": "^0.4.14",
     "@solana/web3.js": "^1.87.1",
     "@types/node": "20.3.3",
     "@types/react": "18.2.14",
