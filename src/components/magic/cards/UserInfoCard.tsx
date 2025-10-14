@@ -8,18 +8,22 @@ import CardHeader from '@/components/ui/CardHeader';
 import CardLabel from '@/components/ui/CardLabel';
 import Spinner from '@/components/ui/Spinner';
 import { getNetworkName } from '@/utils/network';
-import { Network } from '@/utils/network';
+import { Network, getNetworkFromTokenNetwork } from '@/utils/network';
 import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import showToast from '@/utils/showToast';
 import TokenBalance from '../tokens/TokenBalance';
+import SendTransaction from './SendTransactionCard';
+import Modal from '@/components/ui/Modal';
 
 const UserInfo = ({ token, setToken }: LoginProps) => {
-  const { magic, connection, isEthereum, isSolana, isBitcoin, currentNetwork } = useMagic();
+  const { magic, connection, isEthereum, isSolana, isBitcoin, isPolygon, isBase, currentNetwork, switchNetwork } = useMagic();
 
   const [balance, setBalance] = useState('...');
   const [copied, setCopied] = useState('Copy');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isRevealingKey, setIsRevealingKey] = useState(false);
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [selectedToken, setSelectedToken] = useState<any>(null);
 
   const [publicAddress, setPublicAddress] = useState(localStorage.getItem('user'));
 
@@ -69,14 +73,21 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
         console.error('Error getting Solana balance:', error);
         setBalance('Error');
       }
-    } else if (isEthereum && magic) {
+    } else if (isEthereum && magic && magic.rpcProvider) {
       // Get Ethereum balance
       try {
         // For Ethereum, we need to use the provider to get the balance
         const provider = magic.rpcProvider;
+        
+        // Make sure we're using a valid Ethereum address
+        let formattedAddress = publicAddress;
+        if (publicAddress && !publicAddress.startsWith('0x')) {
+          formattedAddress = `0x${publicAddress}`;
+        }
+        
         const balanceInWei = await provider.request({
           method: 'eth_getBalance',
-          params: [publicAddress, 'latest']
+          params: [formattedAddress, 'latest']
         });
         
         // Convert from Wei to ETH (1 ETH = 10^18 Wei)
@@ -85,6 +96,54 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
         console.log('ETH BALANCE: ', balanceInEth);
       } catch (error) {
         console.error('Error getting Ethereum balance:', error);
+        setBalance('Error');
+      }
+    } else if (isPolygon && magic && magic.rpcProvider) {
+      // Get Polygon (MATIC) balance
+      try {
+        const provider = magic.rpcProvider;
+        
+        // Make sure we're using a valid Ethereum-compatible address
+        let formattedAddress = publicAddress;
+        if (publicAddress && !publicAddress.startsWith('0x')) {
+          formattedAddress = `0x${publicAddress}`;
+        }
+        
+        const balanceInWei = await provider.request({
+          method: 'eth_getBalance',
+          params: [formattedAddress, 'latest']
+        });
+        
+        // Convert from Wei to MATIC (1 MATIC = 10^18 Wei)
+        const balanceInMatic = parseInt(balanceInWei, 16) / 1e18;
+        setBalance(balanceInMatic.toString());
+        console.log('MATIC BALANCE: ', balanceInMatic);
+      } catch (error) {
+        console.error('Error getting Polygon balance:', error);
+        setBalance('Error');
+      }
+    } else if (isBase && magic && magic.rpcProvider) {
+      // Get Base (ETH on Base) balance
+      try {
+        const provider = magic.rpcProvider;
+        
+        // Make sure we're using a valid Ethereum-compatible address
+        let formattedAddress = publicAddress;
+        if (publicAddress && !publicAddress.startsWith('0x')) {
+          formattedAddress = `0x${publicAddress}`;
+        }
+        
+        const balanceInWei = await provider.request({
+          method: 'eth_getBalance',
+          params: [formattedAddress, 'latest']
+        });
+        
+        // Convert from Wei to ETH (1 ETH = 10^18 Wei)
+        const balanceInEth = parseInt(balanceInWei, 16) / 1e18;
+        setBalance(balanceInEth.toString());
+        console.log('BASE ETH BALANCE: ', balanceInEth);
+      } catch (error) {
+        console.error('Error getting Base balance:', error);
         setBalance('Error');
       }
     } else if (isBitcoin) {
@@ -109,7 +168,7 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
         setBalance('0'); // Set to 0 on error for better UX
       }
     }
-  }, [connection, publicAddress, isEthereum, isSolana, isBitcoin, magic]);
+  }, [connection, publicAddress, isEthereum, isSolana, isBitcoin, isPolygon, isBase, magic]);
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -120,10 +179,10 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
   }, [getBalance]);
 
   useEffect(() => {
-    if ((connection && isSolana) || (magic && isEthereum) || (magic && isBitcoin)) {
+    if ((connection && isSolana) || (magic && isEthereum) || (magic && isBitcoin) || (magic && isPolygon) || (magic && isBase)) {
       refresh();
     }
-  }, [connection, magic, isSolana, isEthereum, isBitcoin, refresh]);
+  }, [connection, magic, isSolana, isEthereum, isBitcoin, isPolygon, isBase, refresh]);
 
   useEffect(() => {
     setBalance('...');
@@ -152,6 +211,8 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
     if (isSolana) return 'SOL';
     if (isEthereum) return 'ETH';
     if (isBitcoin) return 'BTC';
+    if (isPolygon) return 'MATIC';
+    if (isBase) return 'ETH';
     return '';
   };
 
@@ -180,9 +241,19 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
     <Card>
       <CardHeader id="Wallet">Wallet</CardHeader>
       <CardLabel leftHeader="Status" rightAction={<div onClick={disconnect}>Disconnect</div>} isDisconnect />
-      <div className="flex-row">
-        <div className="green-dot" />
-        <div className="connected">Connected to {getNetworkName(currentNetwork)}</div>
+      <div className="flex-row items-center">
+        <div className="green-dot mr-2" />
+        <select
+          value={currentNetwork}
+          onChange={(e) => switchNetwork(e.target.value as Network)}
+          className="p-1 bg-[#2a2a2a] text-white border border-gray-700 rounded-md shadow-sm text-base"
+        >
+          <option value={Network.BITCOIN_MAINNET}>Bitcoin</option>
+          <option value={Network.ETHEREUM_MAINNET}>Ethereum</option>
+          <option value={Network.SOLANA_MAINNET_BETA}>Solana</option>
+          <option value={Network.POLYGON_MAINNET}>Polygon</option>
+          <option value={Network.BASE_MAINNET}>Base</option>
+        </select>
       </div>
       <Divider />
       <CardLabel leftHeader="Address" rightAction={publicAddress && publicAddress !== 'Fetching address...' ? <div onClick={copy}>{copied}</div> : <Spinner />} />
@@ -204,21 +275,56 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
       <Divider />
       <CardLabel leftHeader="Assets" />
       <div className="mt-3">
-        <TokenBalance publicAddress={publicAddress !== 'Fetching address...' ? publicAddress || undefined : undefined} />
+        <TokenBalance 
+          publicAddress={publicAddress !== 'Fetching address...' ? publicAddress || undefined : undefined}
+          onTokenClick={(token) => {
+            // First switch to the corresponding network
+            const targetNetwork = getNetworkFromTokenNetwork(token.network);
+            
+            // Only switch if we're not already on this network
+            if (currentNetwork !== targetNetwork) {
+              switchNetwork(targetNetwork);
+              
+              // Show a toast to indicate network switch
+              showToast({
+                message: `Switching to ${token.network} network...`,
+                type: 'info',
+              });
+              
+              // Set a small delay before showing the modal to allow network switch to complete
+              setTimeout(() => {
+                // Pass the complete token object including address, decimals, and balance
+                setSelectedToken(token);
+                setShowSendModal(true);
+              }, 1000);
+            } else {
+              // If already on the correct network, show modal immediately
+              // Pass the complete token object including address, decimals, and balance
+              setSelectedToken(token);
+              setShowSendModal(true);
+            }
+          }}
+        />
       </div>
+      
+      {/* Send Transaction Modal */}
+      <Modal 
+        isOpen={showSendModal} 
+        onClose={() => setShowSendModal(false)}
+        title={`Send ${selectedToken?.name || 'Token'}`}
+      >
+        <SendTransaction selectedToken={selectedToken} />
+      </Modal>
       <Divider />
-      <CardLabel leftHeader="Security" />
-      <div className="mt-2">
+      {/* <CardLabel leftHeader="Security" /> */}
+      <div className="mt-1">
         <button 
           onClick={handleRevealKey} 
           disabled={isRevealingKey || !magic}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed"
         >
           {isRevealingKey ? 'Revealing...' : 'Reveal Private Key'}
         </button>
-        <p className="text-sm text-gray-500 mt-1">
-          Reveals your private key in a secure window
-        </p>
       </div>
     </Card>
   );

@@ -7,14 +7,31 @@ import ErrorText from '@/components/ui/ErrorText';
 import Card from '@/components/ui/Card';
 import CardHeader from '@/components/ui/CardHeader';
 import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+import { 
+  TOKEN_PROGRAM_ID, 
+  createTransferInstruction, 
+  getAssociatedTokenAddress, 
+  createAssociatedTokenAccountInstruction 
+} from '@solana/spl-token';
 import showToast from '@/utils/showToast';
 import Spinner from '@/components/ui/Spinner';
 import Spacer from '@/components/ui/Spacer';
 import TransactionHistory from '@/components/ui/TransactionHistory';
 import { Network } from '@/utils/network';
 
-const SendTransaction = () => {
-  const { magic, connection, isEthereum, isSolana, isBitcoin, currentNetwork } = useMagic();
+interface SendTransactionProps {
+  selectedToken?: {
+    name: string;
+    symbol: string;
+    network: string;
+    address?: string;  // Token mint address (for SPL tokens)
+    decimals?: number; // Token decimals (for SPL tokens)
+    balance?: string;  // Current balance
+  };
+}
+
+const SendTransaction: React.FC<SendTransactionProps> = ({ selectedToken }) => {
+  const { magic, connection, isEthereum, isSolana, isBitcoin, isPolygon, isBase, currentNetwork } = useMagic();
   const [toAddress, setToAddress] = useState('');
   const [amount, setAmount] = useState('');
   const [disabled, setDisabled] = useState(!toAddress || !amount);
@@ -53,32 +70,55 @@ const SendTransaction = () => {
 
   // Helper function to get the currency symbol based on the current network
   const getCurrencySymbol = useCallback(() => {
+    if (selectedToken) return selectedToken.symbol;
     if (isSolana) return 'SOL';
     if (isEthereum) return 'ETH';
     if (isBitcoin) return 'BTC';
+    if (isPolygon) return 'MATIC';
+    if (isBase) return 'ETH'; // Base uses ETH
     return '';
-  }, [isSolana, isEthereum, isBitcoin]);
+  }, [selectedToken, isSolana, isEthereum, isBitcoin, isPolygon, isBase]);
 
   // Validate address based on blockchain
   const validateAddress = useCallback((address: string): boolean => {
-    if (isSolana) {
-      try {
-        const pubkey = new PublicKey(address);
-        return PublicKey.isOnCurve(pubkey.toBuffer());
-      } catch {
-        return false;
-      }
-    } else if (isEthereum) {
-      return /^0x[a-fA-F0-9]{40}$/.test(address);
-    } else if (isBitcoin) {
-      // Basic Bitcoin address validation (P2PKH, P2SH, Bech32)
-      return (
-        /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(address) || // P2PKH, P2SH
-        /^bc1[ac-hj-np-z02-9]{39,59}$/.test(address) // Bech32
-      );
+    // Get the network from the selected token or current network state
+    const network = selectedToken?.network || 
+      (isSolana ? 'solana' : 
+       isEthereum ? 'ethereum' : 
+       isBitcoin ? 'bitcoin' : 
+       isPolygon ? 'polygon' : 
+       isBase ? 'base' : '');
+    
+    // Log for debugging
+    console.log('Validating address for network:', network, address);
+    
+    switch(network.toLowerCase()) {
+      case 'solana':
+        try {
+          const pubkey = new PublicKey(address);
+          return PublicKey.isOnCurve(pubkey.toBuffer());
+        } catch {
+          return false;
+        }
+      
+      case 'ethereum':
+      case 'polygon':  // Polygon uses Ethereum address format
+      case 'base':     // Base uses Ethereum address format
+        return /^0x[a-fA-F0-9]{40}$/.test(address);
+      
+      case 'bitcoin':
+        // Basic Bitcoin address validation (P2PKH, P2SH, Bech32)
+        return (
+          /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(address) || // P2PKH, P2SH
+          /^bc1[ac-hj-np-z02-9]{39,59}$/.test(address) // Bech32
+        );
+      
+      default:
+        console.warn('Unknown network for address validation:', network);
+        // For unknown networks, do a basic check that the address is not empty
+        return !!address && address.length > 10;
     }
-    return false;
-  }, [isSolana, isEthereum, isBitcoin]);
+  }, [isSolana, isEthereum, isBitcoin, isPolygon, isBase, selectedToken]);
 
   const sendTransaction = useCallback(async () => {
     if (isNaN(Number(amount))) {
@@ -96,7 +136,6 @@ const SendTransaction = () => {
       setTransactionLoadingLoading(true);
       
       if (isSolana && connection && magic) {
-        // Solana transaction
         const userPublicKey = new PublicKey(publicAddress as string);
         const receiverPublicKey = new PublicKey(toAddress as string);
         
@@ -108,38 +147,154 @@ const SendTransaction = () => {
           ...hash,
         });
 
-        const lamportsAmount = Number(amount) * LAMPORTS_PER_SOL;
-        console.log('Solana amount: ' + lamportsAmount);
+        // Check if we're sending an SPL token or native SOL
+        const isSplToken = selectedToken?.address && selectedToken.network === 'solana' && selectedToken.symbol !== 'SOL';
+        
+        if (isSplToken && selectedToken?.address) {
+          // SPL Token Transfer
+          console.log('Sending SPL token:', selectedToken.symbol);
+          
+          try {
+            // Get the token mint
+            const mintAddress = new PublicKey(selectedToken.address);
+            
+            // Calculate token amount based on decimals
+            const tokenDecimals = selectedToken.decimals || 9;
+            const tokenAmount = Math.round(Number(amount) * Math.pow(10, tokenDecimals));
+            console.log(`SPL token amount: ${tokenAmount} (${amount} with ${tokenDecimals} decimals)`);
+            
+            // Get the sender's token account
+            const senderTokenAccount = await getAssociatedTokenAddress(
+              mintAddress,
+              userPublicKey
+            );
+            
+            // Get or create the recipient's token account
+            const recipientTokenAccount = await getAssociatedTokenAddress(
+              mintAddress,
+              receiverPublicKey
+            );
+            
+            // Check if the recipient's token account exists
+            let recipientAccountInfo;
+            try {
+              recipientAccountInfo = await connection.getAccountInfo(recipientTokenAccount);
+            } catch (error) {
+              console.log('Error checking recipient token account:', error);
+            }
+            
+            // If recipient token account doesn't exist, create it
+            if (!recipientAccountInfo) {
+              console.log('Creating associated token account for recipient');
+              
+              // Create the associated token account instruction
+              const createATAInstruction = createAssociatedTokenAccountInstruction(
+                userPublicKey,               // Payer (fee payer)
+                recipientTokenAccount,       // Associated token account to create
+                receiverPublicKey,           // Token account owner
+                mintAddress                  // Token mint
+              );
+              
+              // Add the instruction to the transaction
+              transaction.add(createATAInstruction);
+            }
+            
+            // Add the transfer instruction
+            const transferInstruction = createTransferInstruction(
+              senderTokenAccount,
+              recipientTokenAccount,
+              userPublicKey,
+              tokenAmount
+            );
+            
+            transaction.add(transferInstruction);
+            
+          } catch (err: any) {
+            console.error('Error creating SPL token transfer:', err);
+            showToast({
+              message: `Error creating SPL token transfer: ${err.message || 'Unknown error'}`,
+              type: 'error',
+            });
+            setTransactionLoadingLoading(false);
+            setDisabled(false);
+            return;
+          }
+        } else {
+          // Native SOL Transfer
+          const lamportsAmount = Number(amount) * LAMPORTS_PER_SOL;
+          console.log('SOL amount in lamports: ' + lamportsAmount);
 
-        const transfer = SystemProgram.transfer({
-          fromPubkey: userPublicKey,
-          toPubkey: receiverPublicKey,
-          lamports: lamportsAmount,
-        });
+          const transfer = SystemProgram.transfer({
+            fromPubkey: userPublicKey,
+            toPubkey: receiverPublicKey,
+            lamports: lamportsAmount,
+          });
 
-        transaction.add(transfer);
+          transaction.add(transfer);
+        }
 
+        // Sign and send the transaction
         const signedTransaction = await magic.solana.signTransaction(transaction, {
           requireAllSignatures: false,
           verifySignatures: true,
         });
 
-        const signature = await connection.sendRawTransaction(
-          Buffer.from(signedTransaction?.rawTransaction as string, 'base64'),
-        );
+        try {
+          // Send the transaction with better error handling
+          const signature = await connection.sendRawTransaction(
+            Buffer.from(signedTransaction?.rawTransaction as string, 'base64'),
+            {
+              skipPreflight: false,
+              preflightCommitment: 'confirmed'
+            }
+          );
 
-        setHash(signature ?? '');
-        showToast({
-          message: `Transaction successful sig: ${signature}`,
-          type: 'success',
-        });
-      } else if (isEthereum && magic) {
-        // Ethereum transaction
+          // Wait for confirmation
+          console.log('Waiting for transaction confirmation...');
+          const confirmation = await connection.confirmTransaction(signature, 'confirmed');
+          
+          if (confirmation.value.err) {
+            throw new Error(`Transaction confirmed but failed: ${JSON.stringify(confirmation.value.err)}`);
+          }
+
+          setHash(signature ?? '');
+          showToast({
+            message: `Transaction successful! ${isSplToken ? 
+              `Sent ${amount} ${selectedToken?.symbol}` : 
+              `Sent ${amount} SOL`}. Signature: ${signature}`,
+            type: 'success',
+          });
+        } catch (err: any) {
+          console.error('Error sending transaction:', err);
+          
+          // Try to get detailed logs if available
+          if (err.logs) {
+            console.error('Transaction logs:', err.logs);
+          } else if (err.getLogs) {
+            try {
+              const logs = await err.getLogs();
+              console.error('Transaction logs from getLogs():', logs);
+            } catch (logErr) {
+              console.error('Failed to get transaction logs:', logErr);
+            }
+          }
+          
+          showToast({
+            message: `Transaction failed: ${err.message || 'Unknown error'}`,
+            type: 'error',
+          });
+          throw err; // Re-throw to be caught by the outer catch block
+        }
+      } else if ((isEthereum || isPolygon || isBase) && magic) {
+        // Ethereum, Polygon, or Base transaction (all use EVM)
         const provider = magic.rpcProvider;
         
-        // Convert ETH to Wei (1 ETH = 10^18 Wei)
+        // Convert amount to Wei (1 ETH/MATIC/etc = 10^18 Wei)
         const weiAmount = BigInt(Math.round(Number(amount) * 1e18)).toString(16);
-        console.log('Ethereum amount in wei: 0x' + weiAmount);
+        
+        const networkName = isPolygon ? 'Polygon' : isBase ? 'Base' : 'Ethereum';
+        const currency = isPolygon ? 'MATIC' : 'ETH';
+        console.log(`${networkName} amount in wei: 0x${weiAmount}`);
         
         const params = [
           {
@@ -157,7 +312,7 @@ const SendTransaction = () => {
         
         setHash(txnHash);
         showToast({
-          message: `Transaction successful hash: ${txnHash}`,
+          message: `Transaction successful! Sent ${amount} ${currency}. Hash: ${txnHash}`,
           type: 'success',
         });
       } else if (isBitcoin && magic && magic.bitcoin) {
@@ -199,11 +354,62 @@ const SendTransaction = () => {
       showToast({ message: e.message || 'Transaction failed', type: 'error' });
       console.log(e);
     }
-  }, [connection, amount, publicAddress, toAddress, magic, isEthereum, isSolana, isBitcoin, validateAddress]);
+  }, [connection, amount, publicAddress, toAddress, magic, isEthereum, isSolana, isBitcoin, isPolygon, isBase, validateAddress]);
+
+  // Get the token information
+  const tokenSymbol = selectedToken?.symbol || (isSolana ? 'SOL' : isEthereum ? 'ETH' : isBitcoin ? 'BTC' : '');
+  const tokenNetwork = selectedToken?.network || (isSolana ? 'solana' : isEthereum ? 'ethereum' : isBitcoin ? 'bitcoin' : '');
+  
+  // Ensure we're using the right network for the selected token
+  useEffect(() => {
+    if (selectedToken) {
+      // Check if the current network matches the token's network
+      const isCorrectNetwork = 
+        (selectedToken.network === 'solana' && isSolana) ||
+        (selectedToken.network === 'ethereum' && isEthereum) ||
+        (selectedToken.network === 'bitcoin' && isBitcoin) ||
+        (selectedToken.network === 'polygon' && isPolygon) ||
+        (selectedToken.network === 'base' && isBase);
+        
+      if (!isCorrectNetwork) {
+        showToast({
+          message: `Warning: You're not on the ${selectedToken.network} network. Switch networks to send this token.`,
+          type: 'warning'
+        });
+      }
+    }
+  }, [selectedToken, isSolana, isEthereum, isBitcoin, isPolygon, isBase]);
 
   return (
-    <Card>
-      <CardHeader id="send-transaction">Send Transaction</CardHeader>
+    <div>
+      {selectedToken && (
+        <div className="mb-4 p-3 bg-[#2a2a2a] rounded-lg">
+          <div className="font-medium">Selected Token</div>
+          <div className="flex items-center mt-2">
+            <div className="text-sm text-gray-300 w-full">
+              <div><span className="font-medium">Name:</span> {selectedToken.name}</div>
+              <div><span className="font-medium">Symbol:</span> {selectedToken.symbol}</div>
+              <div><span className="font-medium">Network:</span> {selectedToken.network}</div>
+              {selectedToken.balance && (
+                <div><span className="font-medium">Available Balance:</span> {selectedToken.balance} {selectedToken.symbol}</div>
+              )}
+              {selectedToken.address && selectedToken.network === 'solana' && selectedToken.symbol !== 'SOL' && (
+                <div className="mt-2 p-2 bg-[#1a1a2e] rounded border border-blue-900">
+                  <div className="text-xs text-blue-400 font-medium">SPL Token</div>
+                  <div className="text-xs text-blue-300 break-all mt-1">
+                    <span className="font-medium">Token Address:</span> {selectedToken.address}
+                  </div>
+                  {selectedToken.decimals !== undefined && (
+                    <div className="text-xs text-blue-300 mt-1">
+                      <span className="font-medium">Decimals:</span> {selectedToken.decimals}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       {/* <div>
         <FormButton onClick={handleAirdrop} disabled={airdropLoading}>
           {airdropLoading ? (
@@ -223,7 +429,7 @@ const SendTransaction = () => {
         placeholder="Receiving Address"
       />
       {toAddressError ? <ErrorText>Invalid address</ErrorText> : null}
-      <FormInput value={amount} onChange={(e: any) => setAmount(e.target.value)} placeholder={`Amount (${getCurrencySymbol()})`} />
+      <FormInput value={amount} onChange={(e: any) => setAmount(e.target.value)} placeholder={`Amount (${tokenSymbol || getCurrencySymbol()})`} />
       {amountError ? <ErrorText className="error">Invalid amount</ErrorText> : null}
       <FormButton onClick={sendTransaction} disabled={!toAddress || !amount || disabled}>
         {transactionLoading ? (
@@ -237,10 +443,10 @@ const SendTransaction = () => {
       {hash ? (
         <>
           <Spacer size={20} />
-          <TransactionHistory />
+          <TransactionHistory txHash={hash} />
         </>
       ) : null}
-    </Card>
+    </div>
   );
 };
 

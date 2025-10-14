@@ -4,17 +4,13 @@ import DevLinks from './DevLinks';
 
 const Header = () => {
   return (
-    <div className="app-header-container">
-      <div className="flex flex-col gap-2.5 items-center">
-        <Image src={Logo} alt="logo" style={{ width: '70px', height: '70px' }}/>
-        <div className="text-center text-[3rem] font-extrabold font-['Inter'] leading-[30px]" style={{ color: '#e2db42' }}>
+    <div className="w-full">
+      <div className="flex flex-row items-center justify-center gap-4">
+        <Image src={Logo} alt="logo" style={{ width: '80px', height: '80px' }} className="md:w-[120px] md:h-[120px]" />
+        <div className="text-[2.5rem] md:text-[4.5rem] font-extrabold font-['Inter']" style={{ color: '#e2db42' }}>
           Wallaneer
         </div>
-        <div className="text-center text-base font-normal font-['SF Mono'] leading-normal" style={{ color: '#e2db42' }}>
-          {/* Solana */}
-        </div>
       </div>
-      {/* <DevLinks /> */}
     </div>
   );
 };

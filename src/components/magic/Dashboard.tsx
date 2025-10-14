@@ -11,24 +11,17 @@ import NetworkSwitcher from './NetworkSwitcher';
 export default function Dashboard({ token, setToken }: LoginProps) {
   return (
     <div className="home-page">
-      <Header />
-      <div className="cards-container">
-        <UserInfo token={token} setToken={setToken} />
-        <Spacer size={10} />
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title">Network</h3>
+      <div className="w-full max-w-4xl mx-auto px-4 flex justify-center">
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          <div className="w-full md:w-auto pt-8">
+            <Header />
           </div>
-          <div className="card-content">
-            <NetworkSwitcher />
+          <div className="w-full md:w-[400px] cards-container">
+            <UserInfo token={token} setToken={setToken} />
           </div>
         </div>
-        <Spacer size={10} />
-        <SendTransaction />
-        <Spacer size={10} />
-        {/* <WalletMethods token={token} setToken={setToken} /> */}
-        <Spacer size={15} />
       </div>
+      <Spacer size={15} />
     </div>
   );
 }
