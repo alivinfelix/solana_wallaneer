@@ -240,7 +240,7 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
   return (
     <Card>
       <CardHeader id="Wallet">Wallet</CardHeader>
-      <CardLabel leftHeader="Status" rightAction={<div onClick={disconnect}>Disconnect</div>} isDisconnect />
+      <CardLabel leftHeader="Network" rightAction={<div onClick={disconnect}>Disconnect</div>} isDisconnect />
       <div className="flex-row items-center">
         <div className="green-dot mr-2" />
         <select
