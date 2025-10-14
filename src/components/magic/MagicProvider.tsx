@@ -1,5 +1,5 @@
 import { getNetworkUrl } from '@/utils/network';
-import { OAuthExtension } from '@magic-ext/oauth';
+import { OAuthExtension } from '@magic-ext/oauth2';
 import { Magic } from 'magic-sdk';
 import { ReactNode, createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { SolanaExtension } from '@magic-ext/solana';
@@ -88,6 +88,11 @@ const MagicProvider = ({ children }: { children: ReactNode }) => {
     if (process.env.NEXT_PUBLIC_MAGIC_API_KEY) {
       console.log('Initializing Magic instances...');
       
+      // Check if we're running on localhost
+      const isLocalhost = typeof window !== 'undefined' && 
+        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+      console.log('Running on localhost:', isLocalhost);
+      
       // Initialize Solana Magic instance
       const solanaInstance = new Magic(process.env.NEXT_PUBLIC_MAGIC_API_KEY as string, {
         extensions: [
@@ -96,17 +101,21 @@ const MagicProvider = ({ children }: { children: ReactNode }) => {
             rpcUrl: getNetworkUrl(Network.SOLANA_MAINNET_BETA),
           }),
         ],
+        //testMode: isLocalhost, // Enable test mode on localhost
       });
       setSolanaMagic(solanaInstance);
       console.log('Solana Magic instance initialized');
       
       // Initialize Ethereum Magic instance
       const ethereumInstance = new Magic(process.env.NEXT_PUBLIC_MAGIC_API_KEY as string, {
-        extensions: [new OAuthExtension()],
+        extensions: [
+          new OAuthExtension(),
+        ],
         network: {
           rpcUrl: getNetworkUrl(Network.ETHEREUM_MAINNET),
           chainId: 1, // Ethereum Mainnet chain ID
         },
+        //testMode: isLocalhost, // Enable test mode on localhost
       });
       setEthereumMagic(ethereumInstance);
       console.log('Ethereum Magic instance initialized');
@@ -120,6 +129,7 @@ const MagicProvider = ({ children }: { children: ReactNode }) => {
             network: 'mainnet', // or 'testnet'
           }),
         ],
+        //testMode: isLocalhost, // Enable test mode on localhost
       });
       setBitcoinMagic(bitcoinInstance);
       console.log('Bitcoin Magic instance initialized');
@@ -131,6 +141,7 @@ const MagicProvider = ({ children }: { children: ReactNode }) => {
           rpcUrl: getNetworkUrl(Network.POLYGON_MAINNET),
           chainId: 137, // Polygon Mainnet chain ID
         },
+        //testMode: isLocalhost, // Enable test mode on localhost
       });
       setPolygonMagic(polygonInstance);
       console.log('Polygon Magic instance initialized');
@@ -142,6 +153,7 @@ const MagicProvider = ({ children }: { children: ReactNode }) => {
           rpcUrl: getNetworkUrl(Network.BASE_MAINNET),
           chainId: 8453, // Base Mainnet chain ID
         },
+        //testMode: isLocalhost, // Enable test mode on localhost
       });
       setBaseMagic(baseInstance);
       console.log('Base Magic instance initialized');

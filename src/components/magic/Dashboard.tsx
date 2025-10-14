@@ -16,7 +16,7 @@ export default function Dashboard({ token, setToken }: LoginProps) {
           <div className="w-full md:w-auto pt-8">
             <Header />
           </div>
-          <div className="w-full md:w-[400px] cards-container">
+          <div className="w-full md:w-[400px] cards-container pt-4 ">
             <UserInfo token={token} setToken={setToken} />
           </div>
         </div>

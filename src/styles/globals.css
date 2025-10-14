@@ -304,7 +304,7 @@ a {
 }
 
 .social-login-button {
-  @apply flex flex-row min-w-[296px] h-12 text-[#3C4043] transition-[0.1s] px-6 py-3 rounded-[300px] bg-[#ffffff] border-2 border-[#DADCE0] relative top-16;
+  @apply flex flex-row w-full h-12 text-white transition-[0.1s] px-6 py-3 rounded-[300px] bg-[#2a2a2a] border border-gray-700 items-center justify-center;
 }
 
 .social-login-button:disabled {
@@ -312,12 +312,11 @@ a {
 }
 
 .social-login-button:hover:enabled {
-  @apply cursor-pointer;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)), #ffffff;
+  @apply cursor-pointer bg-[#3a3a3a];
 }
+
 .social-login-button:active:enabled {
-  @apply opacity-50 scale-[0.99];
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)), #ffffff;
+  @apply opacity-70 scale-[0.99] bg-[#3a3a3a];
 }
 
 .api-button {

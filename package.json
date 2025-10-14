@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@magic-ext/bitcoin": "^26.0.0",
-    "@magic-ext/oauth": "^23.0.3",
+    "@magic-ext/oauth": "^23.4.2",
+    "@magic-ext/oauth2": "^13.0.0",
     "@magic-ext/solana": "^17.0.0",
     "@solana/spl-token": "^0.4.14",
     "@solana/web3.js": "^1.87.1",
