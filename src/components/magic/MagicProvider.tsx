@@ -6,6 +6,9 @@ import { SolanaExtension } from '@magic-ext/solana';
 import { Connection } from '@solana/web3.js';
 import { Network } from '@/utils/network';
 
+// Re-export Magic type for use in other files
+export type { Magic } from 'magic-sdk';
+
 // Use any type for Magic instances to avoid TypeScript errors
 type AnyMagicType = any;
 
