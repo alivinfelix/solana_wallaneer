@@ -13,7 +13,7 @@ import Spacer from '@/components/ui/Spacer';
 import TransactionHistory from '@/components/ui/TransactionHistory';
 
 const SendTransaction = () => {
-  const { magic, connection } = useMagic();
+  const { magic, connection, isEthereum, isSolana } = useMagic();
   const [toAddress, setToAddress] = useState('');
   const [amount, setAmount] = useState('');
   const [disabled, setDisabled] = useState(!toAddress || !amount);
@@ -51,11 +51,6 @@ const SendTransaction = () => {
   }, [connection]);
 
   const sendTransaction = useCallback(async () => {
-    const userPublicKey = new PublicKey(publicAddress as string);
-    const receiverPublicKey = new PublicKey(toAddress as string);
-    if (!PublicKey.isOnCurve(receiverPublicKey.toBuffer())) {
-      return setToAddressError(true);
-    }
     if (isNaN(Number(amount))) {
       return setAmountError(true);
     }
@@ -63,40 +58,87 @@ const SendTransaction = () => {
 
     try {
       setTransactionLoadingLoading(true);
-      const hash = await connection?.getLatestBlockhash();
-      if (!hash) return;
+      
+      if (isSolana && connection) {
+        // Solana transaction
+        const userPublicKey = new PublicKey(publicAddress as string);
+        const receiverPublicKey = new PublicKey(toAddress as string);
+        
+        if (!PublicKey.isOnCurve(receiverPublicKey.toBuffer())) {
+          setTransactionLoadingLoading(false);
+          setDisabled(false);
+          return setToAddressError(true);
+        }
+        
+        const hash = await connection.getLatestBlockhash();
+        if (!hash) return;
 
-      const transaction = new Transaction({
-        feePayer: userPublicKey,
-        ...hash,
-      });
+        const transaction = new Transaction({
+          feePayer: userPublicKey,
+          ...hash,
+        });
 
-      const lamportsAmount = Number(amount) * LAMPORTS_PER_SOL;
+        const lamportsAmount = Number(amount) * LAMPORTS_PER_SOL;
+        console.log('Solana amount: ' + lamportsAmount);
 
-      console.log('amount: ' + lamportsAmount);
+        const transfer = SystemProgram.transfer({
+          fromPubkey: userPublicKey,
+          toPubkey: receiverPublicKey,
+          lamports: lamportsAmount,
+        });
 
-      const transfer = SystemProgram.transfer({
-        fromPubkey: userPublicKey,
-        toPubkey: receiverPublicKey,
-        lamports: lamportsAmount,
-      });
+        transaction.add(transfer);
 
-      transaction.add(transfer);
+        const signedTransaction = await magic?.solana.signTransaction(transaction, {
+          requireAllSignatures: false,
+          verifySignatures: true,
+        });
 
-      const signedTransaction = await magic?.solana.signTransaction(transaction, {
-        requireAllSignatures: false,
-        verifySignatures: true,
-      });
+        const signature = await connection.sendRawTransaction(
+          Buffer.from(signedTransaction?.rawTransaction as string, 'base64'),
+        );
 
-      const signature = await connection?.sendRawTransaction(
-        Buffer.from(signedTransaction?.rawTransaction as string, 'base64'),
-      );
-
-      setHash(signature ?? '');
-      showToast({
-        message: `Transaction successful sig: ${signature}`,
-        type: 'success',
-      });
+        setHash(signature ?? '');
+        showToast({
+          message: `Transaction successful sig: ${signature}`,
+          type: 'success',
+        });
+      } else if (isEthereum && magic) {
+        // Ethereum transaction
+        // Validate Ethereum address
+        if (!/^0x[a-fA-F0-9]{40}$/.test(toAddress)) {
+          setTransactionLoadingLoading(false);
+          setDisabled(false);
+          return setToAddressError(true);
+        }
+        
+        const provider = magic.rpcProvider;
+        
+        // Convert ETH to Wei (1 ETH = 10^18 Wei)
+        const weiAmount = BigInt(Math.round(Number(amount) * 1e18)).toString(16);
+        console.log('Ethereum amount in wei: 0x' + weiAmount);
+        
+        const params = [
+          {
+            from: publicAddress,
+            to: toAddress,
+            value: '0x' + weiAmount,
+            gas: '0x76c0', // 30400 gas
+          },
+        ];
+        
+        const txnHash = await provider.request({
+          method: 'eth_sendTransaction',
+          params,
+        });
+        
+        setHash(txnHash);
+        showToast({
+          message: `Transaction successful hash: ${txnHash}`,
+          type: 'success',
+        });
+      }
+      
       setTransactionLoadingLoading(false);
       setDisabled(false);
       setToAddress('');
@@ -106,10 +148,10 @@ const SendTransaction = () => {
       setDisabled(false);
       setToAddress('');
       setAmount('');
-      showToast({ message: 'Transaction failed', type: 'error' });
+      showToast({ message: e.message || 'Transaction failed', type: 'error' });
       console.log(e);
     }
-  }, [connection, amount, publicAddress, toAddress]);
+  }, [connection, amount, publicAddress, toAddress, magic, isEthereum, isSolana]);
 
   return (
     <Card>
@@ -133,7 +175,7 @@ const SendTransaction = () => {
         placeholder="Receiving Address"
       />
       {toAddressError ? <ErrorText>Invalid address</ErrorText> : null}
-      <FormInput value={amount} onChange={(e: any) => setAmount(e.target.value)} placeholder={`Amount (SOL)`} />
+      <FormInput value={amount} onChange={(e: any) => setAmount(e.target.value)} placeholder={`Amount (${isSolana ? 'SOL' : 'ETH'})`} />
       {amountError ? <ErrorText className="error">Invalid amount</ErrorText> : null}
       <FormButton onClick={sendTransaction} disabled={!toAddress || !amount || disabled}>
         {transactionLoading ? (
