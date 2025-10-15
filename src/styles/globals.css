@@ -24,6 +24,8 @@ body {
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 nav > ul > li {
@@ -65,7 +67,29 @@ ul {
 
 @media only screen and (max-width: 767px) {
   .cards-container {
-    @apply mt-0;
+    @apply mt-0 h-full w-screen;
+  }
+  
+  .home-page,
+  .login-page {
+    @apply px-0 w-screen;
+  }
+  
+  .home-page {
+    @apply h-screen overflow-auto w-screen;
+  }
+  
+  .card-header {
+    @apply text-xl mb-6 text-left;
+  }
+  
+  .form-input,
+  .form-button {
+    @apply text-sm h-10;
+  }
+  
+  .social-login-button {
+    @apply h-10 text-sm;
   }
 }
 
@@ -234,7 +258,13 @@ ul {
 }
 
 .card {
-  @apply w-[360px] flex flex-col shadow-[0px_4px_24px_rgba(0,0,0,0.4)] mt-0 mb-[27px] mx-auto px-6 py-8 rounded-2xl bg-[#1e1e1e] text-white;
+  @apply w-full max-w-[360px] flex flex-col shadow-[0px_4px_24px_rgba(0,0,0,0.4)] mt-0 mb-[27px] mx-auto px-6 py-8 rounded-2xl bg-[#1e1e1e] text-white;
+}
+
+@media only screen and (max-width: 767px) {
+  .card {
+    @apply w-full max-w-none mx-0 px-6 py-8 mb-0 min-h-screen rounded-none overflow-y-auto;
+  }
 }
 
 .card-header {

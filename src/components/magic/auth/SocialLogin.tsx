@@ -106,9 +106,9 @@ const SocialLogin = ({ token, setToken }: LoginProps) => {
         return;
       }
 
-      const result = await activeMagic.oauth2.loginWithRedirect({
+      const result = await activeMagic.oauth2.loginWithPopup({
         provider: provider as any,
-        redirectURI: 'https://auth.magic.link/v1/oauth2/4fEevY1E5BIm5du88WdbNJ4pBhXwaJEvhjLVwhcvnsU=/callback',
+        // redirectURI: 'https://auth.magic.link',
       });
 
       if (result) {

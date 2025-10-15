@@ -241,7 +241,10 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
     <Card>
       {/* Main wallet content */}
       <div>
-        <CardHeader id="Wallet">Wallet</CardHeader>
+        <CardHeader id="Wallet">
+          <span className="hidden md:inline">Wallet</span>
+          <span className="md:hidden">Wallaneer</span>
+        </CardHeader>
         <CardLabel leftHeader="Network" rightAction={<div onClick={disconnect}>Disconnect</div>} isDisconnect />
         <div className="flex-row items-center">
           <div className="green-dot mr-2" />

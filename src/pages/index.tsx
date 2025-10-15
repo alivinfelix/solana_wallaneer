@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import Login from '@/components/magic/Login'
 import Dashboard from '@/components/magic/Dashboard'
 import MagicDashboardRedirect from '@/components/magic/MagicDashboardRedirect'
+import OAuthCallbackHandler from '@/components/magic/OAuthCallbackHandler'
 
 export default function Home() {
 	const [token, setToken] = useState('')
@@ -16,6 +17,9 @@ export default function Home() {
 	return (
 		<MagicProvider>
 			<ToastContainer />
+			{/* Handle OAuth callbacks */}
+			<OAuthCallbackHandler setToken={setToken} />
+			
 			{process.env.NEXT_PUBLIC_MAGIC_API_KEY ? (
 				token.length > 0 ? (
 					<Dashboard token={token} setToken={setToken} />
