@@ -113,7 +113,7 @@ ul {
 }
 
 .login-page {
-  @apply flex flex-col items-center min-h-screen;
+  @apply flex flex-col items-center min-h-screen bg-[url('/bg.jpeg')] bg-cover bg-center;
 }
 .login-method-grid {
   @apply max-w-[100%] grid-rows-3 gap-5 p-4 mt-8;
