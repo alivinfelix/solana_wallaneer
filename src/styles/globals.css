@@ -279,6 +279,11 @@ ul {
   .login-page > div:last-child {
     @apply gap-4 p-4 mt-8;
   }
+  
+  /* Mobile login header styling */
+  .login-page .mobile-header {
+    @apply text-center;
+  }
 }
 
 .card-header {
