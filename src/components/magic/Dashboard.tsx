@@ -7,17 +7,22 @@ import UserInfo from './cards/UserInfoCard';
 import DevLinks from './DevLinks';
 import Header from './Header';
 import NetworkSwitcher from './NetworkSwitcher';
+import BackgroundDecorations from '@/components/ui/BackgroundDecorations';
+import PhoneFrame from '@/components/ui/PhoneFrame';
 
 export default function Dashboard({ token, setToken }: LoginProps) {
   return (
     <div className="home-page">
-      <div className="w-full max-w-4xl mx-auto px-4 flex justify-center">
-        <div className="flex flex-col md:flex-row items-center gap-6">
+      {/* <BackgroundDecorations /> */}
+      <div className="w-full max-w-6xl mx-auto px-4 flex justify-center">
+        <div className="flex flex-col md:flex-row items-center gap-10">
           <div className="w-full md:w-auto pt-8">
             <Header />
           </div>
-          <div className="w-full md:w-[400px] cards-container pt-4 ">
-            <UserInfo token={token} setToken={setToken} />
+          <div className="w-full md:flex-1 cards-container pt-4 flex justify-center">
+            <PhoneFrame>
+              <UserInfo token={token} setToken={setToken} />
+            </PhoneFrame>
           </div>
         </div>
       </div>

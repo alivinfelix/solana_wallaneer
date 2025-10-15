@@ -1,0 +1,53 @@
+.phoneContent {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  scrollbar-width: none !important;
+}
+
+.phoneContent :global(.card) {
+  /* width: 100% !important;
+  margin: 0 !important;
+  padding: 20px !important; */
+  box-shadow: none !important;
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  backdrop-filter: blur(30px);
+}
+
+/* Hide scrollbar for webkit browsers */
+.phoneContent::-webkit-scrollbar {
+  display: none;
+}
+
+/* Full screen modal that takes up the entire phone screen */
+.fullScreenModal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  overflow: hidden;
+}
+
+/* This was previously hiding the main card content when modal is open */
+/* Removed to keep content visible behind the modal */
+
+.phoneContent :global(.card-header) {
+  font-size: 1.5rem !important;
+  margin-bottom: 30px !important;
+}
+
+.phoneContent :global(.form-input),
+.phoneContent :global(.form-button) {
+  font-size: 1.1rem !important;
+}
+
+/* Increase text size for better readability */
+.phoneContent {
+  font-size: 1.1rem;
+}

@@ -853,7 +853,7 @@ const TokenBalance: React.FC<{
           <Spinner />
         </div>
       ) : (
-        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+        <div className="space-y-2 ">
           {tokens.map((token) => (
             <div 
               key={token.symbol} 

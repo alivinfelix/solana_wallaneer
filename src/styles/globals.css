@@ -109,11 +109,11 @@ ul {
 }
 
 .home-page {
-  @apply flex flex-col items-center min-h-screen bg-gradient-to-b from-[#121212] to-[#1a1a2e];
+  @apply flex flex-col items-center min-h-screen bg-[url('/bg.jpeg')] bg-cover bg-center;
 }
 
 .login-page {
-  @apply flex flex-col items-center min-h-screen bg-gradient-to-b from-[#121212] to-[#1a1a2e];
+  @apply flex flex-col items-center min-h-screen;
 }
 .login-method-grid {
   @apply max-w-[100%] grid-rows-3 gap-5 p-4 mt-8;
@@ -234,7 +234,7 @@ ul {
 }
 
 .card {
-  @apply w-[344px] flex flex-col shadow-[0px_4px_24px_rgba(0,0,0,0.4)] mt-0 mb-[27px] mx-auto px-6 py-8 rounded-2xl bg-[#1e1e1e] text-white;
+  @apply w-[360px] flex flex-col shadow-[0px_4px_24px_rgba(0,0,0,0.4)] mt-0 mb-[27px] mx-auto px-6 py-8 rounded-2xl bg-[#1e1e1e] text-white;
 }
 
 .card-header {
@@ -268,7 +268,7 @@ ul {
 .code {
   @apply text-base text-left p-2.5 rounded-[10px];
   font-family: monospace;
-  background: #2a2a2a;
+  background: #2a2a2a78;
   word-wrap: break-word;
 }
 .error {

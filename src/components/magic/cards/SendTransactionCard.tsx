@@ -38,6 +38,11 @@ const SendTransaction: React.FC<SendTransactionProps> = ({ selectedToken }) => {
   const [toAddressError, setToAddressError] = useState(false);
   const [amountError, setAmountError] = useState(false);
   const [airdropLoading, setAirdropLoading] = useState(false);
+  
+  // Log to help debug
+  useEffect(() => {
+    console.log('SendTransaction rendered with selectedToken:', selectedToken);
+  }, [selectedToken]);
   const [hash, setHash] = useState('');
   const [transactionLoading, setTransactionLoadingLoading] = useState(false);
   const publicAddress = localStorage.getItem('user');

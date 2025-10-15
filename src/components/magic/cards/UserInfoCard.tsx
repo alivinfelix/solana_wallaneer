@@ -13,7 +13,7 @@ import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import showToast from '@/utils/showToast';
 import TokenBalance from '../tokens/TokenBalance';
 import SendTransaction from './SendTransactionCard';
-import Modal from '@/components/ui/Modal';
+import FullScreenModal from '@/components/ui/FullScreenModal';
 
 const UserInfo = ({ token, setToken }: LoginProps) => {
   const { magic, connection, isEthereum, isSolana, isBitcoin, isPolygon, isBase, currentNetwork, switchNetwork } = useMagic();
@@ -239,93 +239,98 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
 
   return (
     <Card>
-      <CardHeader id="Wallet">Wallet</CardHeader>
-      <CardLabel leftHeader="Network" rightAction={<div onClick={disconnect}>Disconnect</div>} isDisconnect />
-      <div className="flex-row items-center">
-        <div className="green-dot mr-2" />
-        <select
-          value={currentNetwork}
-          onChange={(e) => switchNetwork(e.target.value as Network)}
-          className="p-1 bg-[#2a2a2a] text-white border border-gray-700 rounded-md shadow-sm text-base"
-        >
-          <option value={Network.BITCOIN_MAINNET}>Bitcoin</option>
-          <option value={Network.ETHEREUM_MAINNET}>Ethereum</option>
-          <option value={Network.SOLANA_MAINNET_BETA}>Solana</option>
-          <option value={Network.POLYGON_MAINNET}>Polygon</option>
-          <option value={Network.BASE_MAINNET}>Base</option>
-        </select>
-      </div>
-      <Divider />
-      <CardLabel leftHeader="Address" rightAction={publicAddress && publicAddress !== 'Fetching address...' ? <div onClick={copy}>{copied}</div> : <Spinner />} />
-      <div className="code">{publicAddress || 'Fetching address...'}</div>
-      <Divider />
-      <CardLabel
-        leftHeader="Balance"
-        rightAction={
-          isRefreshing ? (
-            <div className="loading-container">
-              <Spinner />
-            </div>
-          ) : (
-            <div onClick={refresh}>Refresh</div>
-          )
-        }
-      />
-      <div className="code">{balance} {getCurrencySymbol()}</div>
-      <Divider />
-      <CardLabel leftHeader="Assets" />
-      <div className="mt-3">
-        <TokenBalance 
-          publicAddress={publicAddress !== 'Fetching address...' ? publicAddress || undefined : undefined}
-          onTokenClick={(token) => {
-            // First switch to the corresponding network
-            const targetNetwork = getNetworkFromTokenNetwork(token.network);
-            
-            // Only switch if we're not already on this network
-            if (currentNetwork !== targetNetwork) {
-              switchNetwork(targetNetwork);
+      {/* Main wallet content */}
+      <div>
+        <CardHeader id="Wallet">Wallet</CardHeader>
+        <CardLabel leftHeader="Network" rightAction={<div onClick={disconnect}>Disconnect</div>} isDisconnect />
+        <div className="flex-row items-center">
+          <div className="green-dot mr-2" />
+          <select
+            value={currentNetwork}
+            onChange={(e) => switchNetwork(e.target.value as Network)}
+            className="p-1 bg-[#2a2a2a78] text-white border border-gray-700 rounded-md shadow-sm text-base"
+          >
+            <option value={Network.BITCOIN_MAINNET}>Bitcoin</option>
+            <option value={Network.ETHEREUM_MAINNET}>Ethereum</option>
+            <option value={Network.SOLANA_MAINNET_BETA}>Solana</option>
+            <option value={Network.POLYGON_MAINNET}>Polygon</option>
+            <option value={Network.BASE_MAINNET}>Base</option>
+          </select>
+        </div>
+        <Divider />
+        <CardLabel leftHeader="Address" rightAction={publicAddress && publicAddress !== 'Fetching address...' ? <div onClick={copy}>{copied}</div> : <Spinner />} />
+        <div className="code">{publicAddress || 'Fetching address...'}</div>
+        <Divider />
+        <CardLabel
+          leftHeader="Balance"
+          rightAction={
+            isRefreshing ? (
+              <div className="loading-container">
+                <Spinner />
+              </div>
+            ) : (
+              <div onClick={refresh}>Refresh</div>
+            )
+          }
+        />
+        <div className="code">{balance} {getCurrencySymbol()}</div>
+        <Divider />
+        <CardLabel leftHeader="Assets" />
+        <div className="mt-3">
+          <TokenBalance 
+            publicAddress={publicAddress !== 'Fetching address...' ? publicAddress || undefined : undefined}
+            onTokenClick={(token) => {
+              // First switch to the corresponding network
+              const targetNetwork = getNetworkFromTokenNetwork(token.network);
               
-              // Show a toast to indicate network switch
-              showToast({
-                message: `Switching to ${token.network} network...`,
-                type: 'info',
-              });
-              
-              // Set a small delay before showing the modal to allow network switch to complete
-              setTimeout(() => {
+              // Only switch if we're not already on this network
+              if (currentNetwork !== targetNetwork) {
+                switchNetwork(targetNetwork);
+                
+                // Show a toast to indicate network switch
+                showToast({
+                  message: `Switching to ${token.network} network...`,
+                  type: 'info',
+                });
+                
+                // Set a small delay before showing the modal to allow network switch to complete
+                setTimeout(() => {
+                  // Pass the complete token object including address, decimals, and balance
+                  setSelectedToken(token);
+                  setShowSendModal(true);
+                }, 1000);
+              } else {
+                // If already on the correct network, show modal immediately
                 // Pass the complete token object including address, decimals, and balance
                 setSelectedToken(token);
                 setShowSendModal(true);
-              }, 1000);
-            } else {
-              // If already on the correct network, show modal immediately
-              // Pass the complete token object including address, decimals, and balance
-              setSelectedToken(token);
-              setShowSendModal(true);
-            }
-          }}
-        />
+              }
+            }}
+          />
+        </div>
+        <Divider />
+        <CardLabel leftHeader="Security" />
+        <div className="mt-1">
+          <button 
+            onClick={handleRevealKey} 
+            disabled={isRevealingKey || !magic}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed"
+          >
+            {isRevealingKey ? 'Revealing...' : 'Reveal Private Key'}
+          </button>
+        </div>
       </div>
       
-      {/* Send Transaction Modal */}
-      <Modal 
+      {/* Send Transaction Modal - Full Screen */}
+      <FullScreenModal 
         isOpen={showSendModal} 
         onClose={() => setShowSendModal(false)}
         title={`Send ${selectedToken?.name || 'Token'}`}
       >
-        <SendTransaction selectedToken={selectedToken} />
-      </Modal>
-      <Divider />
-      {/* <CardLabel leftHeader="Security" /> */}
-      <div className="mt-1">
-        <button 
-          onClick={handleRevealKey} 
-          disabled={isRevealingKey || !magic}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed"
-        >
-          {isRevealingKey ? 'Revealing...' : 'Reveal Private Key'}
-        </button>
-      </div>
+        <div className="bg-[#6e6b4e] text-white">
+          <SendTransaction selectedToken={selectedToken} />
+        </div>
+      </FullScreenModal>
     </Card>
   );
 };
