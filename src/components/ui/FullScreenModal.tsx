@@ -30,7 +30,7 @@ const FullScreenModal: React.FC<FullScreenModalProps> = ({ isOpen, onClose, titl
   if (!isOpen) return null;
 
   return (
-    <div className={`absolute inset-0 z-50 bg-[#6e6b4e] bg-opacity-80 backdrop-blur-md ${styles.fullScreenModal} rounded-[20px]`}>
+    <div className={`absolute inset-0 z-50 bg-[#12120de6] bg-opacity-80 backdrop-blur-md ${styles.fullScreenModal} rounded-[20px]`}>
       <div className="flex flex-col h-full bg-opacity-90">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-gray-700 bg-[#1a1a1e]">
@@ -46,7 +46,7 @@ const FullScreenModal: React.FC<FullScreenModalProps> = ({ isOpen, onClose, titl
         </div>
         
         {/* Content */}
-        <div className="flex-1 p-4 overflow-auto bg-[#6e6b4e] bg-opacity-90 text-white">
+        <div className="flex-1 p-4 overflow-auto bg-[#12120de6] bg-opacity-90 text-white">
           {children}
         </div>
       </div>

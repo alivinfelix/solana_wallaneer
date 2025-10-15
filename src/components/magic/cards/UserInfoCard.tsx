@@ -330,7 +330,7 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
         onClose={() => setShowSendModal(false)}
         title={`Send ${selectedToken?.name || 'Token'}`}
       >
-        <div className="bg-[#6e6b4e] text-white">
+        <div className="bg-[#12120de6] text-white">
           <SendTransaction selectedToken={selectedToken} />
         </div>
       </FullScreenModal>

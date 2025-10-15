@@ -47,6 +47,25 @@ const SendTransaction: React.FC<SendTransactionProps> = ({ selectedToken }) => {
   const [transactionLoading, setTransactionLoadingLoading] = useState(false);
   const publicAddress = localStorage.getItem('user');
 
+  // Copy address to clipboard
+  const copyAddressToClipboard = useCallback(async () => {
+    if (publicAddress) {
+      try {
+        await navigator.clipboard.writeText(publicAddress);
+        showToast({
+          message: 'Address copied to clipboard!',
+          type: 'success',
+        });
+      } catch (err) {
+        console.error('Failed to copy address:', err);
+        showToast({
+          message: 'Failed to copy address',
+          type: 'error',
+        });
+      }
+    }
+  }, [publicAddress]);
+
   useEffect(() => {
     setDisabled(!toAddress || !amount);
     setAmountError(false);
@@ -387,6 +406,40 @@ const SendTransaction: React.FC<SendTransactionProps> = ({ selectedToken }) => {
 
   return (
     <div>
+      {/* Wallet Address Display */}
+      <div className="mb-4 p-3 bg-[#1a1a2e] rounded-lg border border-green-900">
+        <div className="font-medium text-green-400">Your Wallet Address</div>
+        <div className="mt-2">
+          <div className="text-sm text-gray-300">
+            <div><span className="font-medium">Network:</span> {
+              selectedToken?.network || 
+              (isSolana ? 'Solana' : 
+               isEthereum ? 'Ethereum' : 
+               isBitcoin ? 'Bitcoin' : 
+               isPolygon ? 'Polygon' : 
+               isBase ? 'Base' : 'Unknown')
+            }</div>
+            <div className="mt-1">
+              <span className="font-medium">Address:</span>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="text-xs text-green-300 break-all p-2 bg-[#0f0f1a] rounded border border-green-800 flex-1">
+                  {publicAddress || 'Not connected'}
+                </div>
+                {publicAddress && (
+                  <button
+                    onClick={copyAddressToClipboard}
+                    className="px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded border border-green-500 transition-colors duration-200 flex-shrink-0"
+                    title="Copy address to clipboard"
+                  >
+                    Copy
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {selectedToken && (
         <div className="mb-4 p-3 bg-[#2a2a2a] rounded-lg">
           <div className="font-medium">Selected Token</div>

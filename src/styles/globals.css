@@ -80,7 +80,7 @@ ul {
   }
   
   .login-page {
-    @apply min-h-screen overflow-auto w-screen px-2;
+    @apply min-h-screen overflow-auto w-screen px-0;
   }
   
   .card-header {
@@ -137,11 +137,11 @@ ul {
 }
 
 .home-page {
-  @apply flex flex-col items-center min-h-screen bg-[url('/bg.jpeg')] bg-cover bg-center;
+  @apply flex flex-col items-center min-h-screen bg-black;
 }
 
 .login-page {
-  @apply flex flex-col items-center min-h-screen bg-[url('/bg.jpeg')] bg-cover bg-center;
+  @apply flex flex-col items-center min-h-screen bg-black;
 }
 .login-method-grid {
   @apply max-w-[100%] grid-rows-3 gap-5 p-4 mt-8;
@@ -272,10 +272,10 @@ ul {
   
   /* Login page specific cards - don't make them full height */
   .login-page .card {
-    @apply min-h-0 h-auto mb-4 mx-auto max-w-sm;
+    @apply min-h-0 h-auto mb-4 mx-auto max-w-md w-full;
   }
   
-  /* Login page grid adjustments */
+  /* Login page layout adjustments */
   .login-page > div:last-child {
     @apply gap-4 p-4 mt-8;
   }
@@ -389,4 +389,26 @@ a {
 
 .space-y-2.max-h-\[300px\].overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* Logo Glow Effect with Inner Circle */
+.logo-glow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-glow-inner {
+  background: yellow;
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  /* background: rgba(245, 189, 19, 0.15); */
+  filter: blur(100px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 
+    0 0 20px 5px rgba(245, 189, 19, 0.25),
+    0 0 40px 10px rgba(245, 189, 19, 0.15);
 }
