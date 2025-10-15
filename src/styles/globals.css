@@ -79,6 +79,10 @@ ul {
     @apply h-screen overflow-auto w-screen;
   }
   
+  .login-page {
+    @apply min-h-screen overflow-auto w-screen px-2;
+  }
+  
   .card-header {
     @apply text-xl mb-6 text-left;
   }
@@ -263,7 +267,17 @@ ul {
 
 @media only screen and (max-width: 767px) {
   .card {
-    @apply w-full max-w-none mx-0 px-6 py-8 mb-0 min-h-screen rounded-none overflow-y-auto;
+    @apply w-full max-w-none mx-0 px-6 py-8 mb-0 min-h-screen rounded-xl overflow-y-auto;
+  }
+  
+  /* Login page specific cards - don't make them full height */
+  .login-page .card {
+    @apply min-h-0 h-auto mb-4 mx-auto max-w-sm;
+  }
+  
+  /* Login page grid adjustments */
+  .login-page > div:last-child {
+    @apply gap-4 p-4 mt-8;
   }
 }
 
