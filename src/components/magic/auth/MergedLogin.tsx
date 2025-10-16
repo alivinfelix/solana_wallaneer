@@ -409,6 +409,14 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
               isLoading={isSocialLoading && currentProvider === 'twitter'}
               onClick={handleSocialLogin}
             />
+            <SocialButton
+              provider="telegram"
+              isLoading={isSocialLoading && currentProvider === 'telegram'}
+              onClick={handleSocialLogin}
+            />
+          </div>
+          <div className="mt-4 text-xs text-gray-400 text-center">
+            <p>Note: Telegram uses popup authentication</p>
           </div>
         </div>
       </div>
