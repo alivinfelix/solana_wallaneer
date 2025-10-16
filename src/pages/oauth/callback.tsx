@@ -96,32 +96,32 @@ const OAuthCallback = () => {
         console.log('Calling solanaMagic.oauth2.getRedirectResult() now...');
         const result = await solanaMagic.oauth2.getRedirectResult();
         
-        //console.log('getRedirectResult() returned');
-        //console.log('Result type:', typeof result);
-        //console.log('Result value:', result);
-        //console.log('Result stringified:', JSON.stringify(result, null, 2));
+        console.log('getRedirectResult() returned');
+        console.log('Result type:', typeof result);
+        console.log('Result value:', result);
+        console.log('Result stringified:', JSON.stringify(result, null, 2));
         
         if (result) {
-          //console.log('✓ Result received');
-          //console.log('Result structure:', Object.keys(result));
+          console.log('✓ Result received');
+          console.log('Result structure:', Object.keys(result));
           
           // Check if magic property exists
           if (result.magic) {
-            //console.log('✓ magic property exists');
-            //console.log('magic structure:', Object.keys(result.magic));
+            console.log('✓ magic property exists');
+            console.log('magic structure:', Object.keys(result.magic));
             
             // Get the DID token
             const didToken = result.magic.idToken;
-            //console.log('DID token present:', !!didToken);
-            //console.log('DID token length:', didToken ? didToken.length : 0);
+            console.log('DID token present:', !!didToken);
+            console.log('DID token length:', didToken ? didToken.length : 0);
             
             if (didToken) {
-              //console.log('✓ DID token received, saving...');
+              console.log('✓ DID token received, saving...');
               
               // Save the token in localStorage
               localStorage.setItem('token', didToken);
               localStorage.setItem('loginType', 'SOCIAL');
-              //console.log('✓ Token saved to localStorage');
+              console.log('✓ Token saved to localStorage');
               
               // Show success message
               showToast({
@@ -129,32 +129,53 @@ const OAuthCallback = () => {
                 type: 'success',
               });
               
-              //console.log('Redirecting to dashboard...');
+              console.log('Redirecting to dashboard...');
               // Redirect to the dashboard after a short delay
               setTimeout(() => {
                 router.push('/');
               }, 500);
             } else {
-              //console.error('✗ No DID token in result');
-              //console.error('result.magic:', result.magic);
+              console.error('✗ No DID token in result');
+              console.error('result.magic:', result.magic);
               setError('No authentication token received from provider');
             }
           } else {
-            //console.error('✗ No magic property in result');
-            //console.error('Available properties:', Object.keys(result));
+            console.error('✗ No magic property in result');
+            console.error('Available properties:', Object.keys(result));
             setError('Invalid authentication result structure');
           }
         } else {
-          //console.error('✗ getRedirectResult() returned null/undefined');
-          //console.error('This usually means no OAuth flow is detected');
+          console.error('✗ getRedirectResult() returned null/undefined');
+          console.error('This usually means no OAuth flow is detected');
           setError('No OAuth authentication detected. Please try logging in again.');
         }
       } catch (error) {
-        //console.error('OAuth callback error:', error);
+        console.error('OAuth callback error:', error);
         
         // More detailed error handling
         if (error instanceof RPCError) {
-          //console.error('RPCError code:', error.code, 'message:', error.message);
+          console.error('RPCError code:', error.code, 'message:', error.message);
+          console.error('Full error object:', JSON.stringify(error, null, 2));
+          
+          // Add more context for the -32600 error
+          if (error.code === -32600) {
+            console.error('===== STATE VERIFICATION ERROR =====');
+            console.error('This error means Magic SDK could not verify the OAuth state.');
+            console.error('Possible causes:');
+            console.error('1. State mismatch between stored and returned values');
+            console.error('2. State expired or was cleared');
+            console.error('3. Redirect URI mismatch');
+            console.error('4. OAuth flow was initiated from a different domain');
+            console.error('====================================');
+            
+            // Check current state
+            const currentState = localStorage.getItem('magic:state');
+            const urlState = new URLSearchParams(window.location.search).get('state');
+            console.error('Current localStorage state:', currentState);
+            console.error('URL state parameter:', urlState);
+            console.error('Do they match?:', currentState !== null && currentState === urlState);
+          }
+          
           setError(`Magic authentication error: ${error.message}`);
         } else {
           setError(`Authentication error: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -162,7 +183,7 @@ const OAuthCallback = () => {
         
         // Log the error stack if available
         if (error instanceof Error && error.stack) {
-          //console.error('Error stack:', error.stack);
+          console.error('Error stack:', error.stack);
         }
       } finally {
         setIsProcessing(false);
