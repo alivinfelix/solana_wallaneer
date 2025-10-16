@@ -177,20 +177,58 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
       if (provider === 'telegram') {
         console.log('Using loginWithPopup for Telegram');
         
-        const result = await activeMagic.oauth2.loginWithPopup({
-          provider: 'telegram',
-        });
-        
-        if (result) {
-          const didToken = await activeMagic.user.getIdToken();
-          if (didToken) {
-            saveToken(didToken, setToken, 'SOCIAL');
+        try {
+          // Log Telegram-specific configuration
+          console.log('Telegram OAuth configuration:');
+          console.log('- Origin:', window.location.origin);
+          console.log('- Protocol:', window.location.protocol);
+          console.log('- Host:', window.location.host);
+          
+          // Enhanced popup configuration for Telegram
+          const telegramConfig = {
+            provider: 'telegram',
+            // No redirectURI needed for popup mode
+          };
+          
+          console.log('Telegram config:', telegramConfig);
+          console.log('Starting Telegram popup authentication...');
+          
+          const result = await activeMagic.oauth2.loginWithPopup(telegramConfig);
+          console.log('Telegram popup result received:', !!result);
+          
+          if (result) {
+            console.log('Telegram auth successful, getting DID token...');
+            const didToken = await activeMagic.user.getIdToken();
+            console.log('DID token received:', !!didToken);
+            
+            if (didToken) {
+              saveToken(didToken, setToken, 'SOCIAL');
+              showToast({
+                message: 'Successfully logged in with Telegram',
+                type: 'success',
+              });
+            } else {
+              console.error('Failed to get DID token after Telegram auth');
+              showToast({
+                message: 'Failed to get authentication token from Telegram',
+                type: 'error',
+              });
+            }
+          } else {
+            console.error('No result from Telegram popup authentication');
             showToast({
-              message: 'Successfully logged in with Telegram',
-              type: 'success',
+              message: 'Telegram authentication failed or was cancelled',
+              type: 'error',
             });
           }
+        } catch (telegramError) {
+          console.error('Telegram authentication error:', telegramError);
+          showToast({
+            message: `Telegram login error: ${telegramError instanceof Error ? telegramError.message : 'Unknown error'}`,
+            type: 'error',
+          });
         }
+        
         return; // Exit early for Telegram
       }
       
@@ -371,14 +409,6 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
               isLoading={isSocialLoading && currentProvider === 'twitter'}
               onClick={handleSocialLogin}
             />
-            <SocialButton
-              provider="telegram"
-              isLoading={isSocialLoading && currentProvider === 'telegram'}
-              onClick={handleSocialLogin}
-            />
-          </div>
-          <div className="mt-4 text-xs text-gray-400 text-center">
-            <p>Note: Telegram uses popup authentication (others use redirect)</p>
           </div>
         </div>
       </div>

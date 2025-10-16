@@ -24,55 +24,55 @@ const OAuthCallback = () => {
     
     const handleOAuthResult = async () => {
       // Log URL parameters for debugging
-      //console.log('=== OAuth Callback Handler - Attempt', retryCount + 1, '===');
-      //console.log('Current URL:', window.location.href);
-      //console.log('URL params:', window.location.search);
-      //console.log('Has state:', window.location.search.includes('state='));
-      //console.log('Has code:', window.location.search.includes('code='));
+      ////console.log('=== OAuth Callback Handler - Attempt', retryCount + 1, '===');
+      ////console.log('Current URL:', window.location.href);
+      ////console.log('URL params:', window.location.search);
+      ////console.log('Has state:', window.location.search.includes('state='));
+      ////console.log('Has code:', window.location.search.includes('code='));
       
       if (!solanaMagic?.oauth2) {
-        //console.log('Magic SDK not available yet, waiting...');
+        ////console.log('Magic SDK not available yet, waiting...');
         retryCount++;
         
         if (retryCount < maxRetries) {
           // Retry after a delay if Magic SDK is not available
           setTimeout(handleOAuthResult, 1000);
         } else {
-          //console.error('Max retries reached, Magic SDK still not available');
+          ////console.error('Max retries reached, Magic SDK still not available');
           setError('Magic SDK failed to load after multiple attempts');
           setIsProcessing(false);
         }
         return;
       }
       
-      //console.log('✓ Magic SDK available');
-      //console.log('✓ OAuth extension available');
+      ////console.log('✓ Magic SDK available');
+      ////console.log('✓ OAuth extension available');
       
       try {
-        console.log('Magic SDK available, processing OAuth callback...');
-        console.log('Magic instance:', solanaMagic);
-        console.log('OAuth extension available:', solanaMagic.oauth2 ? 'Yes' : 'No');
+        //console.log('Magic SDK available, processing OAuth callback...');
+        //console.log('Magic instance:', solanaMagic);
+        //console.log('OAuth extension available:', solanaMagic.oauth2 ? 'Yes' : 'No');
         
         // Check for magic:state in localStorage - this is crucial for OAuth verification
         // Debug: Log all localStorage keys that contain 'magic'
-        console.log('=== Checking localStorage for Magic SDK state ===');
+        //console.log('=== Checking localStorage for Magic SDK state ===');
         const allKeys = Object.keys(localStorage);
         const magicKeys = allKeys.filter(key => key.toLowerCase().includes('magic'));
-        console.log('All localStorage keys with "magic":', magicKeys);
+        //console.log('All localStorage keys with "magic":', magicKeys);
         magicKeys.forEach(key => {
           const value = localStorage.getItem(key);
-          console.log(`  ${key}:`, value ? value.substring(0, 100) + '...' : 'null');
+          //console.log(`  ${key}:`, value ? value.substring(0, 100) + '...' : 'null');
         });
         
         const magicState = localStorage.getItem('magic:state');
-        console.log('magic:state specifically:', !!magicState);
+        //console.log('magic:state specifically:', !!magicState);
         
         // Get the result of the OAuth redirect
-        console.log('Calling getRedirectResult()...');
+        //console.log('Calling getRedirectResult()...');
         
         // Make sure we have the URL state parameter
-        console.log('Full URL:', window.location.href);
-        console.log('URL search params:', window.location.search);
+        //console.log('Full URL:', window.location.href);
+        //console.log('URL search params:', window.location.search);
         
         const urlParams = new URLSearchParams(window.location.search);
         const stateParam = urlParams.get('state');
@@ -80,14 +80,14 @@ const OAuthCallback = () => {
         const errorParam = urlParams.get('error');
         const errorDescription = urlParams.get('error_description');
         
-        console.log('URL state parameter:', stateParam);
-        console.log('URL code parameter:', codeParam);
-        console.log('URL error parameter:', errorParam);
-        console.log('URL error_description:', errorDescription);
-        console.log('All URL parameters:', Array.from(urlParams.entries()));
+        //console.log('URL state parameter:', stateParam);
+        //console.log('URL code parameter:', codeParam);
+        //console.log('URL error parameter:', errorParam);
+        //console.log('URL error_description:', errorDescription);
+        //console.log('All URL parameters:', Array.from(urlParams.entries()));
         
         if (!stateParam || !codeParam) {
-          console.error('Missing required OAuth parameters in URL');
+          //console.error('Missing required OAuth parameters in URL');
           setError('Invalid OAuth callback. Missing required parameters from OAuth provider.');
           setIsProcessing(false);
           return;
@@ -96,41 +96,41 @@ const OAuthCallback = () => {
         // Note: Even if magicState is not in localStorage, we still try getRedirectResult()
         // because Magic SDK might handle state verification differently in some cases
         if (!magicState) {
-          console.warn('Warning: No magic:state found in localStorage');
-          console.warn('This might be due to browser privacy settings or cross-origin issues');
-          console.warn('Attempting to process OAuth callback anyway...');
+          //console.warn('Warning: No magic:state found in localStorage');
+          //console.warn('This might be due to browser privacy settings or cross-origin issues');
+          //console.warn('Attempting to process OAuth callback anyway...');
         }
         
         // This will return null if there's no pending result
-        console.log('Calling solanaMagic.oauth2.getRedirectResult() now...');
+        //console.log('Calling solanaMagic.oauth2.getRedirectResult() now...');
         const result = await solanaMagic.oauth2.getRedirectResult();
         
-        console.log('getRedirectResult() returned');
-        console.log('Result type:', typeof result);
-        console.log('Result value:', result);
-        console.log('Result stringified:', JSON.stringify(result, null, 2));
+        //console.log('getRedirectResult() returned');
+        //console.log('Result type:', typeof result);
+        //console.log('Result value:', result);
+        //console.log('Result stringified:', JSON.stringify(result, null, 2));
         
         if (result) {
-          console.log('✓ Result received');
-          console.log('Result structure:', Object.keys(result));
+          //console.log('✓ Result received');
+          //console.log('Result structure:', Object.keys(result));
           
           // Check if magic property exists
           if (result.magic) {
-            console.log('✓ magic property exists');
-            console.log('magic structure:', Object.keys(result.magic));
+            //console.log('✓ magic property exists');
+            //console.log('magic structure:', Object.keys(result.magic));
             
             // Get the DID token
             const didToken = result.magic.idToken;
-            console.log('DID token present:', !!didToken);
-            console.log('DID token length:', didToken ? didToken.length : 0);
+            //console.log('DID token present:', !!didToken);
+            //console.log('DID token length:', didToken ? didToken.length : 0);
             
             if (didToken) {
-              console.log('✓ DID token received, saving...');
+              //console.log('✓ DID token received, saving...');
               
               // Save the token in localStorage
               localStorage.setItem('token', didToken);
               localStorage.setItem('loginType', 'SOCIAL');
-              console.log('✓ Token saved to localStorage');
+              //console.log('✓ Token saved to localStorage');
               
               // Show success message
               showToast({
@@ -138,51 +138,51 @@ const OAuthCallback = () => {
                 type: 'success',
               });
               
-              console.log('Redirecting to dashboard...');
+              //console.log('Redirecting to dashboard...');
               // Redirect to the dashboard after a short delay
               setTimeout(() => {
                 router.push('/');
               }, 500);
             } else {
-              console.error('✗ No DID token in result');
-              console.error('result.magic:', result.magic);
+              //console.error('✗ No DID token in result');
+              //console.error('result.magic:', result.magic);
               setError('No authentication token received from provider');
             }
           } else {
-            console.error('✗ No magic property in result');
-            console.error('Available properties:', Object.keys(result));
+            //console.error('✗ No magic property in result');
+            //console.error('Available properties:', Object.keys(result));
             setError('Invalid authentication result structure');
           }
         } else {
-          console.error('✗ getRedirectResult() returned null/undefined');
-          console.error('This usually means no OAuth flow is detected');
+          //console.error('✗ getRedirectResult() returned null/undefined');
+          //console.error('This usually means no OAuth flow is detected');
           setError('No OAuth authentication detected. Please try logging in again.');
         }
       } catch (error) {
-        console.error('OAuth callback error:', error);
+        //console.error('OAuth callback error:', error);
         
         // More detailed error handling
         if (error instanceof RPCError) {
-          console.error('RPCError code:', error.code, 'message:', error.message);
-          console.error('Full error object:', JSON.stringify(error, null, 2));
+          //console.error('RPCError code:', error.code, 'message:', error.message);
+          //console.error('Full error object:', JSON.stringify(error, null, 2));
           
           // Add more context for the -32600 error
           if (error.code === -32600) {
-            console.error('===== STATE VERIFICATION ERROR =====');
-            console.error('This error means Magic SDK could not verify the OAuth state.');
-            console.error('Possible causes:');
-            console.error('1. State mismatch between stored and returned values');
-            console.error('2. State expired or was cleared');
-            console.error('3. Redirect URI mismatch');
-            console.error('4. OAuth flow was initiated from a different domain');
-            console.error('====================================');
+            //console.error('===== STATE VERIFICATION ERROR =====');
+            //console.error('This error means Magic SDK could not verify the OAuth state.');
+            //console.error('Possible causes:');
+            //console.error('1. State mismatch between stored and returned values');
+            //console.error('2. State expired or was cleared');
+            //console.error('3. Redirect URI mismatch');
+            //console.error('4. OAuth flow was initiated from a different domain');
+            //console.error('====================================');
             
             // Check current state
             const currentState = localStorage.getItem('magic:state');
             const urlState = new URLSearchParams(window.location.search).get('state');
-            console.error('Current localStorage state:', currentState);
-            console.error('URL state parameter:', urlState);
-            console.error('Do they match?:', currentState !== null && currentState === urlState);
+            //console.error('Current localStorage state:', currentState);
+            //console.error('URL state parameter:', urlState);
+            //console.error('Do they match?:', currentState !== null && currentState === urlState);
           }
           
           setError(`Magic authentication error: ${error.message}`);
@@ -192,7 +192,7 @@ const OAuthCallback = () => {
         
         // Log the error stack if available
         if (error instanceof Error && error.stack) {
-          console.error('Error stack:', error.stack);
+          //console.error('Error stack:', error.stack);
         }
       } finally {
         setIsProcessing(false);
