@@ -166,8 +166,8 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
       sessionStorage.setItem('magicOAuthAttempt', 'true');
       sessionStorage.setItem('magicOAuthProvider', provider);
       
-      // Clear any existing Magic state to prevent conflicts
-      localStorage.removeItem('magic:state');
+      // Note: DO NOT clear magic:state from localStorage as it's needed for OAuth verification
+      // The state is created by Magic SDK and used to verify the OAuth callback
       
       // Use loginWithRedirect instead of loginWithPopup
       console.log('Starting OAuth flow with provider:', provider);

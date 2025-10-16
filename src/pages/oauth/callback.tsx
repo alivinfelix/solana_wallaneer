@@ -49,19 +49,21 @@ const OAuthCallback = () => {
       //console.log('✓ OAuth extension available');
       
       try {
-        //console.log('Magic SDK available, processing OAuth callback...');
-        //console.log('Magic instance:', solanaMagic);
-        //console.log('OAuth extension available:', solanaMagic.oauth2 ? 'Yes' : 'No');
-        
-        // Set OAuth attempt flag to ensure proper processing
-        sessionStorage.setItem('magicOAuthAttempt', 'true');
+        console.log('Magic SDK available, processing OAuth callback...');
+        console.log('Magic instance:', solanaMagic);
+        console.log('OAuth extension available:', solanaMagic.oauth2 ? 'Yes' : 'No');
         
         // Check for magic:state in localStorage - this is crucial for OAuth verification
         const magicState = localStorage.getItem('magic:state');
         console.log('Magic state present in localStorage:', !!magicState);
         
         if (!magicState) {
-          console.warn('No magic:state found in localStorage - this might cause verification issues');
+          console.error('No magic:state found in localStorage!');
+          console.error('This is required for OAuth verification.');
+          console.error('The state should have been created during loginWithRedirect.');
+          setError('OAuth state verification failed. The authentication session may have expired. Please try logging in again.');
+          setIsProcessing(false);
+          return;
         }
         
         // Get the result of the OAuth redirect
@@ -70,7 +72,16 @@ const OAuthCallback = () => {
         // Make sure we have the URL state parameter
         const urlParams = new URLSearchParams(window.location.search);
         const stateParam = urlParams.get('state');
+        const codeParam = urlParams.get('code');
         console.log('URL state parameter present:', !!stateParam);
+        console.log('URL code parameter present:', !!codeParam);
+        
+        if (!stateParam || !codeParam) {
+          console.error('Missing required OAuth parameters in URL');
+          setError('Invalid OAuth callback. Missing required parameters.');
+          setIsProcessing(false);
+          return;
+        }
         
         // This will return null if there's no pending result
         console.log('Calling solanaMagic.oauth2.getRedirectResult() now...');
