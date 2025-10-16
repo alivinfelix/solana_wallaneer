@@ -504,17 +504,17 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
             />
                         
             {/* Original Telegram Button (as backup) */}
-            <div className="mt-2">
+            {/* <div className="mt-2">
               <SocialButton
                 provider="telegram"
                 isLoading={isSocialLoading && currentProvider === 'telegram'}
                 onClick={handleSocialLogin}
               />
-            </div>
+            </div> */}
           </div>
-          <div className="mt-4 text-xs text-gray-400 text-center">
+          {/* <div className="mt-4 text-xs text-gray-400 text-center">
             <p>Note: Telegram offers direct login widget above, or Magic popup below</p>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
