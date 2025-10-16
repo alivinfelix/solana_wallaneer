@@ -262,7 +262,7 @@ ul {
 }
 
 .card {
-  @apply w-full max-w-[360px] flex flex-col shadow-[0px_4px_24px_rgba(0,0,0,0.4)] mt-0 mb-[27px] mx-auto px-6 py-8 rounded-2xl bg-[#1e1e1e] text-white;
+  @apply w-full max-w-[360px] flex flex-col shadow-[0px_4px_24px_rgba(0,0,0,0.4)] mt-0 mb-[27px] mx-auto px-6 py-8 text-white;
 }
 
 @media only screen and (max-width: 767px) {

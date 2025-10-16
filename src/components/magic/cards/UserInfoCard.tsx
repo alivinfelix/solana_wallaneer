@@ -243,15 +243,14 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
       <div>
         <CardHeader id="Wallet">
           <span className="hidden md:inline">Wallet</span>
-          <div className="flex flex-col items-center md:hidden">
-            <div className="logo-glow mb-3">
+          <div className="flex flex-col md:hidden">
+            <div className="logo-glow mb-3 !justify-start">
               <div className="logo-glow-inner z-0"></div>
               <img
                 src="/wallaneer.svg"
                 alt="Wallaneer Logo"
                 className="w-[40px] h-[40px] relative z-1"
               />
-              <span className="md:hidden text-xl font-bold pl-2 pt-3" style={{ color: '#f7bc15', fontFamily: "'Montserrat', 'Poppins', 'Arial', sans-serif" }}>WALLANEER</span>
             </div>
           </div>
         </CardHeader>

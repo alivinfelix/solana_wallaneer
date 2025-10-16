@@ -408,7 +408,7 @@ const SendTransaction: React.FC<SendTransactionProps> = ({ selectedToken }) => {
     <div>
       {/* Wallet Address Display */}
       <div className="mb-4 p-3 bg-[#1a1a2e] rounded-lg border border-green-900">
-        <div className="font-medium text-green-400">Your Wallet Address</div>
+        <div className="font-medium text-green-400">Wallet Address</div>
         <div className="mt-2">
           <div className="text-sm text-gray-300">
             <div><span className="font-medium">Network:</span> {
