@@ -6,7 +6,7 @@ import { LoginProps } from '@/utils/types';
 import { saveToken } from '@/utils/common';
 import Card from '../../ui/Card';
 import CardHeader from '../../ui/CardHeader';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import FormInput from '@/components/ui/FormInput';
 import Image from 'next/image';
 
@@ -87,6 +87,13 @@ const SocialButton = ({ provider, isLoading, onClick }: SocialButtonProps) => {
   );
 };
 
+// Handle Telegram direct login
+declare global {
+  interface Window {
+    onTelegramAuth: (user: any) => void;
+  }
+}
+
 const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }: MergedLoginProps) => {
   const { magic, solanaMagic, ethereumMagic, bitcoinMagic, polygonMagic, baseMagic } = useMagic();
   
@@ -98,6 +105,67 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
   // Social login state
   const [isSocialLoading, setSocialLoading] = useState(false);
   const [currentProvider, setCurrentProvider] = useState<SocialProvider | null>(null);
+  
+  // Telegram direct login handler
+  useEffect(() => {
+    // Define the global callback function for Telegram widget
+    window.onTelegramAuth = (user) => {
+      console.log('Telegram auth successful:', user);
+      // Store the user data in localStorage
+      localStorage.setItem('token', JSON.stringify(user));
+      localStorage.setItem('loginType', 'TELEGRAM_DIRECT');
+      
+      // Update token state
+      setToken(JSON.stringify(user));
+      
+      // Show success message
+      showToast({
+        message: `Successfully logged in with Telegram as ${user.first_name}`,
+        type: 'success',
+      });
+    };
+    
+    // Load the Telegram widget script
+    const loadTelegramWidget = () => {
+      // Remove any existing script first
+      const existingScript = document.getElementById('telegram-login-script');
+      if (existingScript) {
+        existingScript.remove();
+      }
+      
+      // Create the script element
+      const script = document.createElement('script');
+      script.id = 'telegram-login-script';
+      script.src = 'https://telegram.org/js/telegram-widget.js?22';
+      script.async = true;
+      script.setAttribute('data-telegram-login', 'Wallaneer');
+      script.setAttribute('data-size', 'large');
+      script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+      script.setAttribute('data-auth-url', `https://auth.magic.link`);
+      script.setAttribute('data-request-access', 'write');
+      
+      // Add the script to the container
+      const container = document.querySelector('.telegram-login-container');
+      if (container) {
+        container.appendChild(script);
+      }
+    };
+    
+    // Load the widget when component mounts
+    if (typeof window !== 'undefined' && showLoginOptions) {
+      loadTelegramWidget();
+    }
+    
+    return () => {
+      // Clean up
+      window.onTelegramAuth = undefined as any;
+      // Remove the script when component unmounts
+      const script = document.getElementById('telegram-login-script');
+      if (script) {
+        script.remove();
+      }
+    };
+  }, [setToken, showLoginOptions]);
 
   const handleEmailLogin = async () => {
     if (!email.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/)) {
@@ -170,19 +238,19 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
       // The state is created by Magic SDK and used to verify the OAuth callback
       
       // Use loginWithRedirect instead of loginWithPopup
-      console.log('Starting OAuth flow with provider:', provider);
-      console.log('Redirect URI:', `${window.location.origin}/oauth/callback`);
+      //console.log('Starting OAuth flow with provider:', provider);
+      //console.log('Redirect URI:', `${window.location.origin}/oauth/callback`);
       
       // Telegram only supports popup, not redirect
       if (provider === 'telegram') {
-        console.log('Using loginWithPopup for Telegram');
+        //console.log('Using loginWithPopup for Telegram');
         
         try {
           // Log Telegram-specific configuration
-          console.log('Telegram OAuth configuration:');
-          console.log('- Origin:', window.location.origin);
-          console.log('- Protocol:', window.location.protocol);
-          console.log('- Host:', window.location.host);
+          // console.log('Telegram OAuth configuration:');
+          // console.log('- Origin:', window.location.origin);
+          // console.log('- Protocol:', window.location.protocol);
+          // console.log('- Host:', window.location.host);
           
           // Enhanced popup configuration for Telegram
           const telegramConfig = {
@@ -190,32 +258,57 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
             // No redirectURI needed for popup mode
           };
           
-          console.log('Telegram config:', telegramConfig);
-          console.log('Starting Telegram popup authentication...');
+          // console.log('Telegram config:', telegramConfig);
+          // console.log('Starting Telegram popup authentication...');
           
           const result = await activeMagic.oauth2.loginWithPopup(telegramConfig);
-          console.log('Telegram popup result received:', !!result);
+          //console.log('Telegram popup result:', result);
           
-          if (result) {
-            console.log('Telegram auth successful, getting DID token...');
-            const didToken = await activeMagic.user.getIdToken();
-            console.log('DID token received:', !!didToken);
+          if (result && result.magic && result.oauth) {
+            // Extract data from the OAuthRedirectResult interface
+            const { magic: magicData, oauth: oauthData } = result;
+            
+            // console.log('✓ Telegram auth successful');
+            // console.log('Magic data:', {
+            //   hasIdToken: !!magicData.idToken,
+            //   userMetadata: magicData.userMetadata
+            // });
+            // console.log('OAuth data:', {
+            //   provider: oauthData.provider,
+            //   userHandle: oauthData.userHandle,
+            //   scope: oauthData.scope,
+            //   hasAccessToken: !!oauthData.accessToken
+            // });
+            
+            // Use the idToken from the result (not from getIdToken)
+            const didToken = magicData.idToken;
             
             if (didToken) {
+              // Save the token
               saveToken(didToken, setToken, 'SOCIAL');
+              
+              // Optionally store OAuth user info for later use
+              if (oauthData.userInfo) {
+                localStorage.setItem('oauth_user_info', JSON.stringify({
+                  provider: oauthData.provider,
+                  userHandle: oauthData.userHandle,
+                  userInfo: oauthData.userInfo
+                }));
+              }
+              
               showToast({
-                message: 'Successfully logged in with Telegram',
+                message: `Successfully logged in with Telegram${oauthData.userHandle ? ' as @' + oauthData.userHandle : ''}`,
                 type: 'success',
               });
             } else {
-              console.error('Failed to get DID token after Telegram auth');
+              console.error('No DID token in result');
               showToast({
                 message: 'Failed to get authentication token from Telegram',
                 type: 'error',
               });
             }
           } else {
-            console.error('No result from Telegram popup authentication');
+            console.error('Invalid result structure from Telegram popup:', result);
             showToast({
               message: 'Telegram authentication failed or was cancelled',
               type: 'error',
@@ -409,14 +502,24 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
               isLoading={isSocialLoading && currentProvider === 'twitter'}
               onClick={handleSocialLogin}
             />
-            <SocialButton
-              provider="telegram"
-              isLoading={isSocialLoading && currentProvider === 'telegram'}
-              onClick={handleSocialLogin}
-            />
+            
+            {/* Direct Telegram Widget */}
+            <div className="flex justify-center mt-4">
+              <div className="telegram-login-container">
+              </div>
+            </div>
+            
+            {/* Original Telegram Button (as backup) */}
+            <div className="mt-2">
+              <SocialButton
+                provider="telegram"
+                isLoading={isSocialLoading && currentProvider === 'telegram'}
+                onClick={handleSocialLogin}
+              />
+            </div>
           </div>
           <div className="mt-4 text-xs text-gray-400 text-center">
-            <p>Note: Telegram uses popup authentication</p>
+            <p>Note: Telegram offers direct login widget above, or Magic popup below</p>
           </div>
         </div>
       </div>

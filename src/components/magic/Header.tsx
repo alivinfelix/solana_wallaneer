@@ -6,8 +6,8 @@ const Header = () => {
   return (
     <div className="w-full">
       <div className="flex flex-row items-center justify-center gap-4">
-        <Image src={Logo} alt="logo" style={{ width: '80px', height: '80px' }} className="md:w-[120px] md:h-[120px]" />
-        <div className="text-[2.5rem] md:text-[4.5rem] font-extrabold font-['Inter']" style={{ color: '#fcbc14' }}>
+        <Image src={Logo} alt="logo" style={{ width: '180px', height: '180px' }} className="md:w-[120px] md:h-[120px]" />
+        <div className="text-[4.5rem] md:text-[5.5rem] font-extrabold font-['Inter'] pt-9" style={{ color: '#fcbc14' }}>
           Wallaneer
         </div>
       </div>

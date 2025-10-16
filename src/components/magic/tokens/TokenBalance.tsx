@@ -171,7 +171,7 @@ const TokenBalance: React.FC<{
             solToken.balance = (balance / LAMPORTS_PER_SOL).toString();
           }
         } catch (error) {
-          console.error('Error fetching SOL balance:', error);
+          //consoleerror('Error fetching SOL balance:', error);
         }
         
         // Fetch MAGAL SPL token balance
@@ -198,12 +198,12 @@ const TokenBalance: React.FC<{
                 magalToken.balance = '0';
               }
             } catch (err) {
-              console.error('Error getting token account:', err);
+              //consoleerror('Error getting token account:', err);
               magalToken.balance = '0';
             }
           }
         } catch (error) {
-          console.error('Error fetching MAGAL token balance:', error);
+          //consoleerror('Error fetching MAGAL token balance:', error);
         }
       }
       
@@ -215,7 +215,7 @@ const TokenBalance: React.FC<{
       ): Promise<string> => {
         try {
           const formattedAddress = formatEthAddress(address);
-          console.log(`Fetching ${networkName} balance for address:`, formattedAddress);
+          //consolelog(`Fetching ${networkName} balance for address:`, formattedAddress);
           
           const balanceInWei = await provider.request({
             method: 'eth_getBalance',
@@ -224,10 +224,10 @@ const TokenBalance: React.FC<{
           
           // Convert from Wei to ETH/MATIC/etc (1 = 10^18 Wei)
           const balance = parseInt(balanceInWei, 16) / 1e18;
-          console.log(`${networkName} balance:`, balance);
+          //consolelog(`${networkName} balance:`, balance);
           return balance.toString();
         } catch (error) {
-          console.error(`Error fetching ${networkName} balance:`, error);
+          //consoleerror(`Error fetching ${networkName} balance:`, error);
           return '0';
         }
       };
@@ -252,7 +252,7 @@ const TokenBalance: React.FC<{
             const balanceInEth = parseInt(balanceInWei, 16) / 1e18;
             ethToken.balance = balanceInEth.toString();
           } catch (error) {
-            console.error('Error fetching ETH balance:', error);
+            //consoleerror('Error fetching ETH balance:', error);
             ethToken.balance = '0';
           }
         }
@@ -278,7 +278,7 @@ const TokenBalance: React.FC<{
             const balanceInMatic = parseInt(balanceInWei, 16) / 1e18;
             maticToken.balance = balanceInMatic.toString();
           } catch (error) {
-            console.error('Error fetching MATIC balance:', error);
+            //consoleerror('Error fetching MATIC balance:', error);
             maticToken.balance = '0';
           }
         }
@@ -304,7 +304,7 @@ const TokenBalance: React.FC<{
             const balanceInEth = parseInt(balanceInWei, 16) / 1e18;
             baseEthToken.balance = balanceInEth.toString();
         } catch (error) {
-            console.error('Error fetching BASE ETH balance:', error);
+            //consoleerror('Error fetching BASE ETH balance:', error);
             baseEthToken.balance = '0';
           }
         }
@@ -322,7 +322,7 @@ const TokenBalance: React.FC<{
       //   type: 'success',
       // });
     } catch (error) {
-      console.error('Error fetching token balances:', error);
+      //consoleerror('Error fetching token balances:', error);
       showToast({
         message: 'Failed to fetch some token balances',
         type: 'error',
@@ -351,7 +351,7 @@ const TokenBalance: React.FC<{
     try {
       // Format address for EVM chains
       const formattedAddress = address && !address.startsWith('0x') ? `0x${address}` : address;
-      console.log(`Fetching ${networkName} balance for address:`, formattedAddress);
+      //consolelog(`Fetching ${networkName} balance for address:`, formattedAddress);
       
       const balanceInWei = await provider.request({
         method: 'eth_getBalance',
@@ -360,10 +360,10 @@ const TokenBalance: React.FC<{
       
       // Convert from Wei to ETH/MATIC/etc (1 = 10^18 Wei)
       const balance = parseInt(balanceInWei, 16) / 1e18;
-      console.log(`${networkName} balance:`, balance);
+      //consolelog(`${networkName} balance:`, balance);
       return balance.toString();
     } catch (error) {
-      console.error(`Error fetching ${networkName} balance:`, error);
+      //consoleerror(`Error fetching ${networkName} balance:`, error);
       return '0';
     }
   }, []);
@@ -390,7 +390,7 @@ const TokenBalance: React.FC<{
           const balance = await connection.getBalance(new PublicKey(solanaAddress));
           newBalance = (balance / LAMPORTS_PER_SOL).toString();
         } catch (error) {
-          console.error(`Error fetching ${token.symbol} balance:`, error);
+          //consoleerror(`Error fetching ${token.symbol} balance:`, error);
           newBalance = 'Error';
         }
       } else if (token.symbol === 'ETH' && token.network === 'ethereum') {
@@ -405,7 +405,7 @@ const TokenBalance: React.FC<{
               formattedAddress = `0x${formattedAddress}`;
             }
             
-            console.log('Refreshing ETH balance for address:', formattedAddress);
+            //consolelog('Refreshing ETH balance for address:', formattedAddress);
             
             // Direct RPC call to Ethereum network
           const balanceInWei = await provider.request({
@@ -415,16 +415,16 @@ const TokenBalance: React.FC<{
           
             // Convert from Wei to ETH (1 ETH = 10^18 Wei)
           const balanceInEth = parseInt(balanceInWei, 16) / 1e18;
-            console.log('ETH BALANCE (refresh): ', balanceInEth);
+            //consolelog('ETH BALANCE (refresh): ', balanceInEth);
             
             newBalance = balanceInEth.toString();
         } catch (error) {
-            console.error('Error refreshing ETH balance:', error);
+            //consoleerror('Error refreshing ETH balance:', error);
             newBalance = '0';
           }
         } else {
           newBalance = '0';
-          console.log('Could not refresh ETH balance: No Ethereum provider or EVM address');
+          //consolelog('Could not refresh ETH balance: No Ethereum provider or EVM address');
         }
       } else if (token.symbol === 'MATIC') {
         // Use the EVM address for Polygon and always try to fetch if we have an EVM address
@@ -438,7 +438,7 @@ const TokenBalance: React.FC<{
               formattedAddress = `0x${formattedAddress}`;
             }
             
-            console.log('Refreshing MATIC balance for address:', formattedAddress);
+            //consolelog('Refreshing MATIC balance for address:', formattedAddress);
             
             // Direct RPC call to Polygon network
             const balanceInWei = await provider.request({
@@ -448,16 +448,16 @@ const TokenBalance: React.FC<{
             
             // Convert from Wei to MATIC (1 MATIC = 10^18 Wei)
             const balanceInMatic = parseInt(balanceInWei, 16) / 1e18;
-            console.log('MATIC BALANCE (refresh): ', balanceInMatic);
+            //consolelog('MATIC BALANCE (refresh): ', balanceInMatic);
             
             newBalance = balanceInMatic.toString();
           } catch (error) {
-            console.error('Error refreshing MATIC balance:', error);
+            //consoleerror('Error refreshing MATIC balance:', error);
             newBalance = '0';
           }
           } else {
           newBalance = '0';
-          console.log('Could not refresh MATIC balance: No Polygon provider or EVM address');
+          //consolelog('Could not refresh MATIC balance: No Polygon provider or EVM address');
         }
       } else if (token.symbol === 'BASE_ETH') {
         // Use the EVM address for Base and always try to fetch if we have an EVM address
@@ -471,7 +471,7 @@ const TokenBalance: React.FC<{
               formattedAddress = `0x${formattedAddress}`;
             }
             
-            console.log('Refreshing BASE ETH balance for address:', formattedAddress);
+            //consolelog('Refreshing BASE ETH balance for address:', formattedAddress);
             
             // Direct RPC call to Base network
             const balanceInWei = await provider.request({
@@ -481,16 +481,16 @@ const TokenBalance: React.FC<{
             
             // Convert from Wei to ETH (1 ETH = 10^18 Wei)
             const balanceInEth = parseInt(balanceInWei, 16) / 1e18;
-            console.log('BASE ETH BALANCE (refresh): ', balanceInEth);
+            //consolelog('BASE ETH BALANCE (refresh): ', balanceInEth);
             
             newBalance = balanceInEth.toString();
           } catch (error) {
-            console.error('Error refreshing BASE ETH balance:', error);
+            //consoleerror('Error refreshing BASE ETH balance:', error);
             newBalance = '0';
           }
         } else {
           newBalance = '0';
-          console.log('Could not refresh BASE ETH balance: No Base provider or EVM address');
+          //consolelog('Could not refresh BASE ETH balance: No Base provider or EVM address');
         }
       } else if (token.symbol === 'BTC') {
         // Placeholder for Bitcoin
@@ -510,7 +510,7 @@ const TokenBalance: React.FC<{
             newBalance = '0';
           }
         } catch (error) {
-          console.error(`Error fetching ${token.symbol} balance:`, error);
+          //consoleerror(`Error fetching ${token.symbol} balance:`, error);
           newBalance = 'Error';
         }
       }
@@ -527,7 +527,7 @@ const TokenBalance: React.FC<{
         type: 'success',
       });
     } catch (error) {
-      console.error(`Error refreshing ${token.symbol} balance:`, error);
+      //consoleerror(`Error refreshing ${token.symbol} balance:`, error);
       showToast({
         message: `Failed to update ${token.symbol} balance`,
         type: 'error',
@@ -553,7 +553,7 @@ const TokenBalance: React.FC<{
   // Get chain-specific addresses - this is the first thing we need to do
   useEffect(() => {
     const getAddresses = async () => {
-      console.log('Starting address retrieval for all chains...');
+      //consolelog('Starting address retrieval for all chains...');
       
       const addressPromises = [];
       
@@ -564,11 +564,11 @@ const TokenBalance: React.FC<{
             const solanaMetadata = await solanaMagic.user.getInfo();
             if (solanaMetadata && solanaMetadata.publicAddress) {
               setSolanaAddress(solanaMetadata.publicAddress);
-              console.log('Got Solana address:', solanaMetadata.publicAddress);
+              ////consolelog('Got Solana address:', solanaMetadata.publicAddress);
               return { type: 'solana', address: solanaMetadata.publicAddress };
             }
           } catch (error) {
-            console.error('Error getting Solana address:', error);
+            ////consoleerror('Error getting Solana address:', error);
           }
           return null;
         })());
@@ -578,11 +578,11 @@ const TokenBalance: React.FC<{
             const metadata = await magic.user.getInfo();
             if (metadata && metadata.publicAddress) {
               setSolanaAddress(metadata.publicAddress);
-              console.log('Got Solana address from main magic:', metadata.publicAddress);
+              ////consolelog('Got Solana address from main magic:', metadata.publicAddress);
               return { type: 'solana', address: metadata.publicAddress };
             }
           } catch (error) {
-            console.error('Error getting Solana address from main magic:', error);
+            ////consoleerror('Error getting Solana address from main magic:', error);
           }
           return null;
         })());
@@ -599,11 +599,11 @@ const TokenBalance: React.FC<{
                 ethAddress = `0x${ethAddress}`;
               }
               setEvmAddress(ethAddress);
-              console.log('Got EVM address from ethereumMagic:', ethAddress);
+              //consolelog('Got EVM address from ethereumMagic:', ethAddress);
               return { type: 'evm', address: ethAddress };
             }
           } catch (error) {
-            console.error('Error getting Ethereum address:', error);
+            //consoleerror('Error getting Ethereum address:', error);
           }
           return null;
         })());
@@ -617,11 +617,11 @@ const TokenBalance: React.FC<{
                 ethAddress = `0x${ethAddress}`;
               }
               setEvmAddress(ethAddress);
-              console.log('Got EVM address from polygonMagic:', ethAddress);
+              ////consolelog('Got EVM address from polygonMagic:', ethAddress);
               return { type: 'evm', address: ethAddress };
             }
           } catch (error) {
-            console.error('Error getting Polygon address:', error);
+            ////consoleerror('Error getting Polygon address:', error);
           }
           return null;
         })());
@@ -635,11 +635,11 @@ const TokenBalance: React.FC<{
                 ethAddress = `0x${ethAddress}`;
               }
               setEvmAddress(ethAddress);
-              console.log('Got EVM address from baseMagic:', ethAddress);
+              //consolelog('Got EVM address from baseMagic:', ethAddress);
               return { type: 'evm', address: ethAddress };
             }
           } catch (error) {
-            console.error('Error getting Base address:', error);
+            //consoleerror('Error getting Base address:', error);
           }
           return null;
         })());
@@ -653,11 +653,11 @@ const TokenBalance: React.FC<{
                 ethAddress = `0x${ethAddress}`;
               }
               setEvmAddress(ethAddress);
-              console.log('Got EVM address from main magic:', ethAddress);
+              //consolelog('Got EVM address from main magic:', ethAddress);
               return { type: 'evm', address: ethAddress };
             }
           } catch (error) {
-            console.error('Error getting EVM address from main magic:', error);
+            //consoleerror('Error getting EVM address from main magic:', error);
           }
           return null;
         })());
@@ -670,11 +670,11 @@ const TokenBalance: React.FC<{
             const btcMetadata = await bitcoinMagic.user.getInfo();
             if (btcMetadata && btcMetadata.publicAddress) {
               setBitcoinAddress(btcMetadata.publicAddress);
-              console.log('Got Bitcoin address:', btcMetadata.publicAddress);
+              //consolelog('Got Bitcoin address:', btcMetadata.publicAddress);
               return { type: 'bitcoin', address: btcMetadata.publicAddress };
             }
           } catch (error) {
-            console.error('Error getting Bitcoin address:', error);
+            //consoleerror('Error getting Bitcoin address:', error);
           }
           return null;
         })());
@@ -684,11 +684,11 @@ const TokenBalance: React.FC<{
             const metadata = await magic.user.getInfo();
             if (metadata && metadata.publicAddress) {
               setBitcoinAddress(metadata.publicAddress);
-              console.log('Got Bitcoin address from main magic:', metadata.publicAddress);
+              //consolelog('Got Bitcoin address from main magic:', metadata.publicAddress);
               return { type: 'bitcoin', address: metadata.publicAddress };
             }
           } catch (error) {
-            console.error('Error getting Bitcoin address from main magic:', error);
+            //consoleerror('Error getting Bitcoin address from main magic:', error);
           }
           return null;
         })());
@@ -699,16 +699,16 @@ const TokenBalance: React.FC<{
         const results = await Promise.all(addressPromises);
         const addresses = results.filter(result => result !== null);
         
-        console.log('All addresses retrieved:', addresses);
+        //consolelog('All addresses retrieved:', addresses);
         
         // If we have addresses, trigger a balance fetch
         if (addresses.length > 0) {
-          console.log('Addresses retrieved, fetching balances...');
+          //consolelog('Addresses retrieved, fetching balances...');
           // We'll let the main useEffect handle fetching balances
           // This avoids dependency issues with fetchTokenBalances
         }
       } catch (error) {
-        console.error('Error retrieving addresses:', error);
+        //consoleerror('Error retrieving addresses:', error);
       }
     };
     
@@ -732,11 +732,11 @@ const TokenBalance: React.FC<{
   useEffect(() => {
     // Only fetch if we have at least one address
     if (solanaAddress || evmAddress || bitcoinAddress) {
-      console.log('Fetching all token balances...', {
-        solana: solanaAddress,
-        evm: evmAddress,
-        bitcoin: bitcoinAddress
-      });
+      // //consolelog('Fetching all token balances...', {
+      //   solana: solanaAddress,
+      //   evm: evmAddress,
+      //   bitcoin: bitcoinAddress
+      // });
     fetchTokenBalances();
     }
   }, [fetchTokenBalances, solanaAddress, evmAddress, bitcoinAddress]);
