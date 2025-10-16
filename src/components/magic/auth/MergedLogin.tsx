@@ -502,13 +502,7 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
               isLoading={isSocialLoading && currentProvider === 'twitter'}
               onClick={handleSocialLogin}
             />
-            
-            {/* Direct Telegram Widget */}
-            <div className="flex justify-center mt-4">
-              <div className="telegram-login-container">
-              </div>
-            </div>
-            
+                        
             {/* Original Telegram Button (as backup) */}
             <div className="mt-2">
               <SocialButton
