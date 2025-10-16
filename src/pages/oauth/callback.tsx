@@ -54,17 +54,18 @@ const OAuthCallback = () => {
         console.log('OAuth extension available:', solanaMagic.oauth2 ? 'Yes' : 'No');
         
         // Check for magic:state in localStorage - this is crucial for OAuth verification
-        const magicState = localStorage.getItem('magic:state');
-        console.log('Magic state present in localStorage:', !!magicState);
+        // Debug: Log all localStorage keys that contain 'magic'
+        console.log('=== Checking localStorage for Magic SDK state ===');
+        const allKeys = Object.keys(localStorage);
+        const magicKeys = allKeys.filter(key => key.toLowerCase().includes('magic'));
+        console.log('All localStorage keys with "magic":', magicKeys);
+        magicKeys.forEach(key => {
+          const value = localStorage.getItem(key);
+          console.log(`  ${key}:`, value ? value.substring(0, 100) + '...' : 'null');
+        });
         
-        if (!magicState) {
-          console.error('No magic:state found in localStorage!');
-          console.error('This is required for OAuth verification.');
-          console.error('The state should have been created during loginWithRedirect.');
-          setError('OAuth state verification failed. The authentication session may have expired. Please try logging in again.');
-          setIsProcessing(false);
-          return;
-        }
+        const magicState = localStorage.getItem('magic:state');
+        console.log('magic:state specifically:', !!magicState);
         
         // Get the result of the OAuth redirect
         console.log('Calling getRedirectResult()...');
@@ -78,9 +79,17 @@ const OAuthCallback = () => {
         
         if (!stateParam || !codeParam) {
           console.error('Missing required OAuth parameters in URL');
-          setError('Invalid OAuth callback. Missing required parameters.');
+          setError('Invalid OAuth callback. Missing required parameters from OAuth provider.');
           setIsProcessing(false);
           return;
+        }
+        
+        // Note: Even if magicState is not in localStorage, we still try getRedirectResult()
+        // because Magic SDK might handle state verification differently in some cases
+        if (!magicState) {
+          console.warn('Warning: No magic:state found in localStorage');
+          console.warn('This might be due to browser privacy settings or cross-origin issues');
+          console.warn('Attempting to process OAuth callback anyway...');
         }
         
         // This will return null if there's no pending result

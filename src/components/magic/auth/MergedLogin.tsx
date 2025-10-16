@@ -218,7 +218,20 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
       console.log('OAuth config:', oauthConfig);
       console.log('Using loginWithRedirect for:', provider);
       
+      // Debug: Check localStorage before redirect
+      console.log('=== localStorage BEFORE loginWithRedirect ===');
+      const beforeKeys = Object.keys(localStorage).filter(k => k.toLowerCase().includes('magic'));
+      console.log('Magic-related keys before:', beforeKeys);
+      
       await activeMagic.oauth2.loginWithRedirect(oauthConfig);
+      
+      // Debug: Check localStorage after redirect (this might not execute due to immediate redirect)
+      console.log('=== localStorage AFTER loginWithRedirect (if this shows, redirect was delayed) ===');
+      const afterKeys = Object.keys(localStorage).filter(k => k.toLowerCase().includes('magic'));
+      console.log('Magic-related keys after:', afterKeys);
+      afterKeys.forEach(key => {
+        console.log(`  ${key}:`, localStorage.getItem(key)?.substring(0, 100));
+      });
       
       // Note: The flow will redirect away from the current page,
       // so the code below won't execute until the user returns
