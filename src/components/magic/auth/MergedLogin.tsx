@@ -21,9 +21,10 @@ interface SocialButtonProps {
   provider: SocialProvider;
   isLoading: boolean;
   onClick: (provider: SocialProvider) => void;
+  className?: string;
 }
 
-const SocialButton = ({ provider, isLoading, onClick }: SocialButtonProps) => {
+const SocialButton = ({ provider, isLoading, onClick, className }: SocialButtonProps) => {
   const getProviderName = () => {
     switch (provider) {
       case 'google':
@@ -66,7 +67,7 @@ const SocialButton = ({ provider, isLoading, onClick }: SocialButtonProps) => {
       case 'github':
         return (
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24px" height="24px" fill="white">
-            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
           </svg>
         );
     }
@@ -74,7 +75,7 @@ const SocialButton = ({ provider, isLoading, onClick }: SocialButtonProps) => {
 
   return (
     <button
-      className="social-login-button"
+      className={`social-login-button ${className}`}
       onClick={() => onClick(provider)}
       disabled={isLoading}
     >
@@ -96,16 +97,16 @@ declare global {
 
 const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }: MergedLoginProps) => {
   const { magic, solanaMagic, ethereumMagic, bitcoinMagic, polygonMagic, baseMagic } = useMagic();
-  
+
   // Email OTP state
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState(false);
   const [isEmailLoginInProgress, setEmailLoginInProgress] = useState(false);
-  
+
   // Social login state
   const [isSocialLoading, setSocialLoading] = useState(false);
   const [currentProvider, setCurrentProvider] = useState<SocialProvider | null>(null);
-  
+
   // Telegram direct login handler
   useEffect(() => {
     // Define the global callback function for Telegram widget
@@ -114,17 +115,17 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
       // Store the user data in localStorage
       localStorage.setItem('token', JSON.stringify(user));
       localStorage.setItem('loginType', 'TELEGRAM_DIRECT');
-      
+
       // Update token state
       setToken(JSON.stringify(user));
-      
+
       // Show success message
       showToast({
         message: `Successfully logged in with Telegram as ${user.first_name}`,
         type: 'success',
       });
     };
-    
+
     // Load the Telegram widget script
     const loadTelegramWidget = () => {
       // Remove any existing script first
@@ -132,7 +133,7 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
       if (existingScript) {
         existingScript.remove();
       }
-      
+
       // Create the script element
       const script = document.createElement('script');
       script.id = 'telegram-login-script';
@@ -143,19 +144,19 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
       script.setAttribute('data-onauth', 'onTelegramAuth(user)');
       script.setAttribute('data-auth-url', `https://auth.magic.link`);
       script.setAttribute('data-request-access', 'write');
-      
+
       // Add the script to the container
       const container = document.querySelector('.telegram-login-container');
       if (container) {
         container.appendChild(script);
       }
     };
-    
+
     // Load the widget when component mounts
     if (typeof window !== 'undefined' && showLoginOptions) {
       loadTelegramWidget();
     }
-    
+
     return () => {
       // Clean up
       window.onTelegramAuth = undefined as any;
@@ -215,13 +216,13 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
         polygonMagic: !!polygonMagic,
         baseMagic: !!baseMagic
       });
-      
+
       // Use solanaMagic as default since it's the primary network
       const activeMagic = solanaMagic || magic;
-      
+
       console.log('Active Magic instance:', activeMagic);
       console.log('OAuth extension available:', activeMagic?.oauth2 ? 'Yes' : 'No');
-      
+
       if (!activeMagic?.oauth2) {
         showToast({
           message: 'OAuth extension not available. Please check your Magic configuration.',
@@ -233,41 +234,41 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
       // Store in session storage that we're attempting OAuth
       sessionStorage.setItem('magicOAuthAttempt', 'true');
       sessionStorage.setItem('magicOAuthProvider', provider);
-      
+
       // Note: DO NOT clear magic:state from localStorage as it's needed for OAuth verification
       // The state is created by Magic SDK and used to verify the OAuth callback
-      
+
       // Use loginWithRedirect instead of loginWithPopup
       //console.log('Starting OAuth flow with provider:', provider);
       //console.log('Redirect URI:', `${window.location.origin}/oauth/callback`);
-      
+
       // Telegram only supports popup, not redirect
       if (provider === 'telegram') {
         //console.log('Using loginWithPopup for Telegram');
-        
+
         try {
           // Log Telegram-specific configuration
           // console.log('Telegram OAuth configuration:');
           // console.log('- Origin:', window.location.origin);
           // console.log('- Protocol:', window.location.protocol);
           // console.log('- Host:', window.location.host);
-          
+
           // Enhanced popup configuration for Telegram
           const telegramConfig = {
             provider: 'telegram',
             // No redirectURI needed for popup mode
           };
-          
+
           // console.log('Telegram config:', telegramConfig);
           // console.log('Starting Telegram popup authentication...');
-          
+
           const result = await activeMagic.oauth2.loginWithPopup(telegramConfig);
           //console.log('Telegram popup result:', result);
-          
+
           if (result && result.magic && result.oauth) {
             // Extract data from the OAuthRedirectResult interface
             const { magic: magicData, oauth: oauthData } = result;
-            
+
             // console.log('✓ Telegram auth successful');
             // console.log('Magic data:', {
             //   hasIdToken: !!magicData.idToken,
@@ -279,14 +280,14 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
             //   scope: oauthData.scope,
             //   hasAccessToken: !!oauthData.accessToken
             // });
-            
+
             // Use the idToken from the result (not from getIdToken)
             const didToken = magicData.idToken;
-            
+
             if (didToken) {
               // Save the token
               saveToken(didToken, setToken, 'SOCIAL');
-              
+
               // Optionally store OAuth user info for later use
               if (oauthData.userInfo) {
                 localStorage.setItem('oauth_user_info', JSON.stringify({
@@ -295,7 +296,7 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
                   userInfo: oauthData.userInfo
                 }));
               }
-              
+
               showToast({
                 message: `Successfully logged in with Telegram${oauthData.userHandle ? ' as @' + oauthData.userHandle : ''}`,
                 type: 'success',
@@ -321,49 +322,49 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
             type: 'error',
           });
         }
-        
+
         return; // Exit early for Telegram
       }
-      
+
       // For other providers, use loginWithRedirect
       const supportedRedirectProviders = ['google', 'facebook', 'apple', 'github', 'bitbucket', 'gitlab', 'linkedin', 'twitter', 'discord', 'twitch', 'microsoft'];
-      
+
       if (!supportedRedirectProviders.includes(provider.toLowerCase())) {
         showToast({
           message: `${provider} redirect is not supported. Supported: ${supportedRedirectProviders.join(', ')}`,
           type: 'warning',
         });
       }
-      
+
       // Configure provider-specific options
       const oauthConfig: any = {
         provider: provider.toLowerCase(),
         redirectURI: `${window.location.origin}/oauth/callback`,
       };
-      
+
       // Add scopes for specific providers
       if (provider === 'google') {
         oauthConfig.scope = ['email', 'profile'];
       }
-      
+
       console.log('OAuth config:', oauthConfig);
       console.log('Using loginWithRedirect for:', provider);
-      
+
       // Debug: Check localStorage before redirect
       console.log('=== localStorage BEFORE loginWithRedirect ===');
       const beforeKeys = Object.keys(localStorage).filter(k => k.toLowerCase().includes('magic'));
       console.log('Magic-related keys before:', beforeKeys);
-      
+
       // Important: Store our own state tracking to help debug
       const timestamp = Date.now();
       sessionStorage.setItem('oauthInitiatedAt', timestamp.toString());
       console.log('OAuth flow initiated at:', timestamp);
-      
+
       // Try the redirect - this should create the state and redirect
       console.log('Calling loginWithRedirect now...');
       try {
         await activeMagic.oauth2.loginWithRedirect(oauthConfig);
-        
+
         // Debug: Check localStorage after redirect (this might not execute due to immediate redirect)
         console.log('=== localStorage AFTER loginWithRedirect (if this shows, redirect was delayed) ===');
         const afterKeys = Object.keys(localStorage).filter(k => k.toLowerCase().includes('magic'));
@@ -375,10 +376,10 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
         console.error('Error during loginWithRedirect:', redirectError);
         throw redirectError; // Re-throw to be caught by outer catch
       }
-      
+
       // Note: The flow will redirect away from the current page,
       // so the code below won't execute until the user returns
-      
+
     } catch (e) {
       console.error('Social login error:', e);
       if (e instanceof RPCError) {
@@ -389,11 +390,11 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
           type: 'error',
         });
       }
-      
+
       // Clear OAuth attempt flag on error
       sessionStorage.removeItem('magicOAuthAttempt');
       sessionStorage.removeItem('magicOAuthProvider');
-      
+
       setSocialLoading(false);
       setCurrentProvider(null);
     }
@@ -417,52 +418,84 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
       {/* Header with Welcome message - only on mobile */}
-      <div className="md:hidden flex items-center justify-between p-6 border-b border-gray-700">
-        <button 
+      <div className="md:hidden flex items-center justify-between p-6 border-b border-none">
+        <button
           className="text-gray-400 hover:text-white flex items-center gap-2 text-sm"
           onClick={() => setShowLoginOptions(false)}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
           </svg>
         </button>
-        
-        <div className="flex items-center gap-1 pl-5">
-          <img src="/wallaneer.svg" alt="Wallaneer Logo" style={{ width: 36, height: 36 }} />
+
+        {/* <div className="flex items-center gap-1 pl-5">
+          <div className="logo-glow">
+            <div className="logo-glow-inner z-0" style={{ transform: 'scale(0.4)'}}></div>
+            <img src="/wallaneer.svg" alt="Wallaneer Logo" style={{ width: 42, height: 42, position: 'relative', zIndex: 1 }} />
+          </div>
           <h1 
             className="text-xl font-extrabold font-['Inter']" 
-            style={{ color: '#f7bc15', paddingTop: '8px'}}
+            style={{ color: '#f7bc15', paddingTop: '8px',fontFamily: "'Montserrat', 'Poppins', 'Arial', sans-serif"}}
           >
             WALLANEER
           </h1>
-        </div>
-        
-        <div className="w-12"></div> {/* Spacer for centering */}
+        </div> */}
+
+        <div className="w-12"></div>
       </div>
-      
+
       {/* Desktop back button - positioned absolutely */}
       <div className="hidden md:block absolute top-8 left-8 z-10">
-        <button 
+        <button
           className="text-gray-400 hover:text-white flex items-center gap-2 text-sm"
           onClick={() => setShowLoginOptions(false)}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
           </svg>
           Back
         </button>
       </div>
-      
+
       {/* Login Content - Full screen centered */}
       <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-md md:bg-[#1e1e1e] md:rounded-xl md:p-8 md:shadow-lg">
+        <div className="w-full max-w-md md:bg-[#1e1e1e] md:rounded-xl md:pt-[100px] md:pr-[40px] md:pl-[40px] md:shadow-lg">
           {/* Desktop title */}
           <div className="hidden md:block mb-8">
-            <h2 className="text-2xl font-extrabold text-center" style={{ color: '#f7bc15' }}>
-              Welcome to WALLANEER
-            </h2>
+            <div className="flex justify-center mb-8">
+              <div className="flex flex-col items-center">
+                <div className="logo-glow mb-3">
+                  <div className="logo-glow-inner z-0"></div>
+                  <img
+                    src="/wallaneer.svg"
+                    alt="Wallaneer Logo"
+                    className="w-[90px] h-[90px] relative z-1"
+                  />
+                </div>
+                <h2 className="text-2xl font-bold" style={{ color: '#f7bc15', fontFamily: "'Montserrat', 'Poppins', 'Arial', sans-serif" }}>
+                  WALLANEER
+                </h2>
+              </div>
+            </div>
           </div>
-          
+
+          {/* Mobile Logo - only visible on mobile */}
+          <div className="md:hidden flex justify-center mb-8">
+            <div className="flex flex-col items-center">
+              <div className="logo-glow mb-3">
+                <div className="logo-glow-inner z-0"></div>
+                <img
+                  src="/wallaneer.svg"
+                  alt="Wallaneer Logo"
+                  className="w-[90px] h-[90px] relative z-1"
+                />
+              </div>
+              <h2 className="text-2xl font-bold" style={{ color: '#f7bc15', fontFamily: "'Montserrat', 'Poppins', 'Arial', sans-serif" }}>
+                WALLANEER
+              </h2>
+            </div>
+          </div>
+
           {/* Email OTP Section */}
           <div className="mb-8">
             <FormInput
@@ -472,10 +505,11 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
               }}
               placeholder={token.length > 0 ? 'Already logged in' : 'Enter your email'}
               value={email}
+              className="!border-[#f7bc15b5] !bg-[#f7bc1517] !rounded-full"
             />
             {emailError && <span className="error">Enter a valid email</span>}
             <button
-              className="form-button w-full mt-4"
+              className="form-button w-full mt-4 !bg-[#f7bc15] !text-black"
               disabled={isEmailLoginInProgress || (token.length > 0 ? false : email.length == 0)}
               onClick={() => handleEmailLogin()}
             >
@@ -485,9 +519,9 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
 
           {/* Divider */}
           <div className="flex items-center my-8">
-            <div className="flex-1 border-t border-gray-600"></div>
-            <span className="px-4 text-gray-400 text-sm">or continue with</span>
-            <div className="flex-1 border-t border-gray-600"></div>
+            <div className="flex-1 border-t border-[#f7bc1542]"></div>
+            <span className="px-4 text-[#f7bc15] text-sm">or continue with</span>
+            <div className="flex-1 border-t border-[#f7bc1542]"></div>
           </div>
 
           {/* Social Login Section */}
@@ -501,8 +535,9 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
               provider="twitter"
               isLoading={isSocialLoading && currentProvider === 'twitter'}
               onClick={handleSocialLogin}
+              className="!mb-[100px]"
             />
-                        
+
             {/* Original Telegram Button (as backup) */}
             {/* <div className="mt-2">
               <SocialButton

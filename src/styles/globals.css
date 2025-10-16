@@ -353,7 +353,7 @@ a {
 }
 
 .social-login-button {
-  @apply flex flex-row w-full h-12 text-white transition-[0.1s] px-6 py-3 rounded-[300px] bg-[#2a2a2a] border border-gray-700 items-center justify-center;
+  @apply flex flex-row w-full h-12 text-white transition-[0.1s] px-6 py-3 rounded-[300px] bg-[#f7bc1517] border border-[#f7bc1554] items-center justify-center;
 }
 
 .social-login-button:disabled {
@@ -361,11 +361,11 @@ a {
 }
 
 .social-login-button:hover:enabled {
-  @apply cursor-pointer bg-[#3a3a3a];
+  @apply cursor-pointer bg-[#f7bc1547];
 }
 
 .social-login-button:active:enabled {
-  @apply opacity-70 scale-[0.99] bg-[#3a3a3a];
+  @apply opacity-70 scale-[0.99] bg-[#f7bc1547];
 }
 
 .api-button {
