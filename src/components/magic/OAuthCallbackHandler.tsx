@@ -2,6 +2,7 @@ import { useEffect, useState, Dispatch, SetStateAction } from 'react';
 import { useMagic } from './MagicProvider';
 import { saveToken } from '@/utils/common';
 import showToast from '@/utils/showToast';
+import { useRouter } from 'next/router';
 
 interface OAuthCallbackHandlerProps {
   setToken: Dispatch<SetStateAction<string>>;
@@ -10,8 +11,14 @@ interface OAuthCallbackHandlerProps {
 const OAuthCallbackHandler: React.FC<OAuthCallbackHandlerProps> = ({ setToken }) => {
   const { solanaMagic } = useMagic();
   const [isProcessing, setIsProcessing] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
+    // Only run on the main page, not on the dedicated callback page
+    if (window.location.pathname === '/oauth/callback') {
+      return;
+    }
+
     const checkForOAuthResult = async () => {
       // Don't proceed if Magic SDK isn't available
       if (!solanaMagic?.oauth2) {
@@ -19,19 +26,24 @@ const OAuthCallbackHandler: React.FC<OAuthCallbackHandlerProps> = ({ setToken })
         return;
       }
       
-      console.log('Magic SDK available, checking for OAuth result...');
-      console.log('Current URL:', window.location.href);
-      console.log('Session storage OAuth attempt:', sessionStorage.getItem('magicOAuthAttempt'));
+      // Check if we're returning from a popup OAuth flow
+      // This is a fallback for popup flow, as we're primarily using redirect flow now
+      const isOAuthAttempt = sessionStorage.getItem('magicOAuthAttempt') === 'true';
+      
+      if (!isOAuthAttempt) {
+        // No OAuth attempt in progress, don't need to check
+        return;
+      }
       
       try {
         setIsProcessing(true);
+        console.log('Checking for OAuth result...');
         
         // Wait a moment for Magic to process any pending redirects
         await new Promise(resolve => setTimeout(resolve, 500));
         
         // This will return null if there's no pending result
         const result = await solanaMagic.oauth2.getRedirectResult();
-        console.log('OAuth result check:', result);
         
         if (result) {
           console.log('OAuth result found!', result);
@@ -39,7 +51,6 @@ const OAuthCallbackHandler: React.FC<OAuthCallbackHandlerProps> = ({ setToken })
           const didToken = result.magic.idToken;
           
           if (didToken) {
-            console.log('DID token found, saving...');
             // Save the token
             saveToken(didToken, setToken, 'SOCIAL');
             
@@ -48,49 +59,37 @@ const OAuthCallbackHandler: React.FC<OAuthCallbackHandlerProps> = ({ setToken })
               message: 'Successfully logged in with social provider',
               type: 'success',
             });
-            
-            console.log('OAuth login completed successfully');
-          } else {
-            console.log('No DID token in result');
           }
-        } else {
-          console.log('No OAuth result found');
         }
       } catch (error) {
         console.error('OAuth callback error:', error);
         
         // Only show error if it looks like we're processing a callback
-        // This prevents showing errors during normal page loads
         const isLikelyCallback = 
           window.location.href.includes('state=') || 
           window.location.href.includes('code=') ||
           window.location.href.includes('magic_credential') ||
-          sessionStorage.getItem('magicOAuthAttempt') === 'true';
+          isOAuthAttempt;
           
         if (isLikelyCallback) {
-          console.error('Showing OAuth error to user:', error);
-          showToast({
-            message: `Authentication error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            type: 'error',
-          });
-        } else {
-          // Just log the error without showing a toast for normal page loads
-          console.log('No OAuth result found (expected during normal page load)');
+          // showToast({
+          //   message: `Authentication error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          //   type: 'error',
+          // });
         }
       } finally {
         setIsProcessing(false);
-        // Clear the OAuth attempt flag after a delay to allow for processing
-        setTimeout(() => {
-          sessionStorage.removeItem('magicOAuthAttempt');
-        }, 2000);
+        // Clear the OAuth attempt flag
+        sessionStorage.removeItem('magicOAuthAttempt');
+        sessionStorage.removeItem('magicOAuthProvider');
       }
     };
     
     // Add a small delay to ensure Magic SDK is fully initialized
-    const timer = setTimeout(checkForOAuthResult, 100);
+    const timer = setTimeout(checkForOAuthResult, 300);
     
     return () => clearTimeout(timer);
-  }, [solanaMagic, setToken]);
+  }, [solanaMagic, setToken, router]);
 
   // This component doesn't render anything visible
   return null;

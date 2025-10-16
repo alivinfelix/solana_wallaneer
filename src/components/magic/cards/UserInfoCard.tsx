@@ -291,10 +291,10 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
                 switchNetwork(targetNetwork);
                 
                 // Show a toast to indicate network switch
-                showToast({
-                  message: `Switching to ${token.network} network...`,
-                  type: 'info',
-                });
+                // showToast({
+                //   message: `Switching to ${token.network} network...`,
+                //   type: 'info',
+                // });
                 
                 // Set a small delay before showing the modal to allow network switch to complete
                 setTimeout(() => {

@@ -1,4 +1,3 @@
-import MagicProvider from '../components/magic/MagicProvider'
 import {useEffect, useState} from 'react'
 import {ToastContainer} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -15,7 +14,7 @@ export default function Home() {
 	}, [setToken])
 
 	return (
-		<MagicProvider>
+		<>
 			<ToastContainer />
 			{/* Handle OAuth callbacks */}
 			<OAuthCallbackHandler setToken={setToken} />
@@ -29,6 +28,6 @@ export default function Home() {
 			) : (
 				<MagicDashboardRedirect />
 			)}
-		</MagicProvider>
+		</>
 	)
 }

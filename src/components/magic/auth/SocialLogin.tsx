@@ -106,21 +106,21 @@ const SocialLogin = ({ token, setToken }: LoginProps) => {
         return;
       }
 
-      const result = await activeMagic.oauth2.loginWithPopup({
+      // Store in session storage that we're attempting OAuth
+      sessionStorage.setItem('magicOAuthAttempt', 'true');
+      sessionStorage.setItem('magicOAuthProvider', provider);
+      
+      // Use loginWithRedirect instead of loginWithPopup
+      await activeMagic.oauth2.loginWithRedirect({
         provider: provider as any,
-        // redirectURI: 'https://auth.magic.link',
+        redirectURI: `${window.location.origin}/oauth/callback`,
+        // Optional scopes based on provider
+        scope: provider === 'google' ? ['email', 'profile'] : undefined
       });
-
-      if (result) {
-        const didToken = await activeMagic.user.getIdToken();
-        if (didToken) {
-          saveToken(didToken, setToken, 'SOCIAL');
-          showToast({
-            message: `Successfully logged in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}`,
-            type: 'success',
-          });
-        }
-      }
+      
+      // Note: The flow will redirect away from the current page,
+      // so the code below won't execute until the user returns
+      
     } catch (e) {
       console.error('Social login error:', e);
       if (e instanceof RPCError) {
@@ -131,7 +131,11 @@ const SocialLogin = ({ token, setToken }: LoginProps) => {
           type: 'error',
         });
       }
-    } finally {
+      
+      // Clear OAuth attempt flag on error
+      sessionStorage.removeItem('magicOAuthAttempt');
+      sessionStorage.removeItem('magicOAuthProvider');
+      
       setIsLoading(false);
       setCurrentProvider(null);
     }

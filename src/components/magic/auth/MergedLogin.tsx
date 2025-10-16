@@ -15,7 +15,7 @@ interface MergedLoginProps extends LoginProps {
   setShowLoginOptions: (show: boolean) => void;
 }
 
-type SocialProvider = 'google' | 'twitter' | 'telegram';
+type SocialProvider = 'google' | 'twitter' | 'telegram' | 'github';
 
 interface SocialButtonProps {
   provider: SocialProvider;
@@ -32,6 +32,8 @@ const SocialButton = ({ provider, isLoading, onClick }: SocialButtonProps) => {
         return 'X (Twitter)';
       case 'telegram':
         return 'Telegram';
+      case 'github':
+        return 'GitHub';
     }
   };
 
@@ -59,6 +61,12 @@ const SocialButton = ({ provider, isLoading, onClick }: SocialButtonProps) => {
             <path fill="#fff" d="M33.95,15l-3.746,19.126c0,0-0.161,0.874-1.245,0.874c-0.576,0-0.873-0.274-0.873-0.274l-8.114-6.733 l-3.97-2.001l-5.095-1.355c0,0-0.907-0.262-0.907-1.012c0-0.625,0.933-0.923,0.933-0.923l21.316-8.468 c-0.001-0.001,0.651-0.235,1.126-0.234C33.667,14,34,14.125,34,14.5C34,14.75,33.95,15,33.95,15z" />
             <path fill="#b0bec5" d="M23,30.505l-3.426,3.374c0,0-0.149,0.115-0.348,0.12c-0.069,0.002-0.143-0.009-0.219-0.043 l0.964-5.965L23,30.505z" />
             <path fill="#cfd8dc" d="M29.897,18.196c-0.169-0.22-0.481-0.26-0.701-0.093L16,26c0,0,2.106,5.892,2.427,6.912 c0.322,1.021,0.58,1.045,0.58,1.045l0.964-5.965l9.832-9.096C30.023,18.729,30.064,18.416,29.897,18.196z" />
+          </svg>
+        );
+      case 'github':
+        return (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24px" height="24px" fill="white">
+            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
           </svg>
         );
     }
@@ -154,21 +162,67 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
         return;
       }
 
-      const result = await activeMagic.oauth2.loginWithPopup({
-        provider: provider as any,
-        // redirectURI: 'https://auth.magic.link',
-      });
-
-      if (result) {
-        const didToken = await activeMagic.user.getIdToken();
-        if (didToken) {
-          saveToken(didToken, setToken, 'SOCIAL');
-          showToast({
-            message: `Successfully logged in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}`,
-            type: 'success',
-          });
+      // Store in session storage that we're attempting OAuth
+      sessionStorage.setItem('magicOAuthAttempt', 'true');
+      sessionStorage.setItem('magicOAuthProvider', provider);
+      
+      // Clear any existing Magic state to prevent conflicts
+      localStorage.removeItem('magic:state');
+      
+      // Use loginWithRedirect instead of loginWithPopup
+      console.log('Starting OAuth flow with provider:', provider);
+      console.log('Redirect URI:', `${window.location.origin}/oauth/callback`);
+      
+      // Telegram only supports popup, not redirect
+      if (provider === 'telegram') {
+        console.log('Using loginWithPopup for Telegram');
+        
+        const result = await activeMagic.oauth2.loginWithPopup({
+          provider: 'telegram',
+        });
+        
+        if (result) {
+          const didToken = await activeMagic.user.getIdToken();
+          if (didToken) {
+            saveToken(didToken, setToken, 'SOCIAL');
+            showToast({
+              message: 'Successfully logged in with Telegram',
+              type: 'success',
+            });
+          }
         }
+        return; // Exit early for Telegram
       }
+      
+      // For other providers, use loginWithRedirect
+      const supportedRedirectProviders = ['google', 'facebook', 'apple', 'github', 'bitbucket', 'gitlab', 'linkedin', 'twitter', 'discord', 'twitch', 'microsoft'];
+      
+      if (!supportedRedirectProviders.includes(provider.toLowerCase())) {
+        showToast({
+          message: `${provider} redirect is not supported. Supported: ${supportedRedirectProviders.join(', ')}`,
+          type: 'warning',
+        });
+      }
+      
+      // Configure provider-specific options
+      const oauthConfig: any = {
+        provider: provider.toLowerCase(),
+        redirectURI: `${window.location.origin}/oauth/callback`,
+      };
+      
+      // Add scopes for specific providers
+      if (provider === 'google') {
+        oauthConfig.scope = ['email', 'profile'];
+      }
+      
+      console.log('OAuth config:', oauthConfig);
+      console.log('Using loginWithRedirect for:', provider);
+      
+      await activeMagic.oauth2.loginWithRedirect(oauthConfig);
+      
+      // Note: The flow will redirect away from the current page,
+      // so the code below won't execute until the user returns
+      
     } catch (e) {
       console.error('Social login error:', e);
       if (e instanceof RPCError) {
@@ -179,7 +233,11 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
           type: 'error',
         });
       }
-    } finally {
+      
+      // Clear OAuth attempt flag on error
+      sessionStorage.removeItem('magicOAuthAttempt');
+      sessionStorage.removeItem('magicOAuthProvider');
+      
       setSocialLoading(false);
       setCurrentProvider(null);
     }
@@ -293,6 +351,9 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
               isLoading={isSocialLoading && currentProvider === 'telegram'}
               onClick={handleSocialLogin}
             />
+          </div>
+          <div className="mt-4 text-xs text-gray-400 text-center">
+            <p>Note: Telegram uses popup authentication (others use redirect)</p>
           </div>
         </div>
       </div>
