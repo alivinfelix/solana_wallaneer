@@ -71,11 +71,20 @@ const OAuthCallback = () => {
         console.log('Calling getRedirectResult()...');
         
         // Make sure we have the URL state parameter
+        console.log('Full URL:', window.location.href);
+        console.log('URL search params:', window.location.search);
+        
         const urlParams = new URLSearchParams(window.location.search);
         const stateParam = urlParams.get('state');
         const codeParam = urlParams.get('code');
-        console.log('URL state parameter present:', !!stateParam);
-        console.log('URL code parameter present:', !!codeParam);
+        const errorParam = urlParams.get('error');
+        const errorDescription = urlParams.get('error_description');
+        
+        console.log('URL state parameter:', stateParam);
+        console.log('URL code parameter:', codeParam);
+        console.log('URL error parameter:', errorParam);
+        console.log('URL error_description:', errorDescription);
+        console.log('All URL parameters:', Array.from(urlParams.entries()));
         
         if (!stateParam || !codeParam) {
           console.error('Missing required OAuth parameters in URL');

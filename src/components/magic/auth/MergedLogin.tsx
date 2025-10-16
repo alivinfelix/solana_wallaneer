@@ -223,15 +223,27 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
       const beforeKeys = Object.keys(localStorage).filter(k => k.toLowerCase().includes('magic'));
       console.log('Magic-related keys before:', beforeKeys);
       
-      await activeMagic.oauth2.loginWithRedirect(oauthConfig);
+      // Important: Store our own state tracking to help debug
+      const timestamp = Date.now();
+      sessionStorage.setItem('oauthInitiatedAt', timestamp.toString());
+      console.log('OAuth flow initiated at:', timestamp);
       
-      // Debug: Check localStorage after redirect (this might not execute due to immediate redirect)
-      console.log('=== localStorage AFTER loginWithRedirect (if this shows, redirect was delayed) ===');
-      const afterKeys = Object.keys(localStorage).filter(k => k.toLowerCase().includes('magic'));
-      console.log('Magic-related keys after:', afterKeys);
-      afterKeys.forEach(key => {
-        console.log(`  ${key}:`, localStorage.getItem(key)?.substring(0, 100));
-      });
+      // Try the redirect - this should create the state and redirect
+      console.log('Calling loginWithRedirect now...');
+      try {
+        await activeMagic.oauth2.loginWithRedirect(oauthConfig);
+        
+        // Debug: Check localStorage after redirect (this might not execute due to immediate redirect)
+        console.log('=== localStorage AFTER loginWithRedirect (if this shows, redirect was delayed) ===');
+        const afterKeys = Object.keys(localStorage).filter(k => k.toLowerCase().includes('magic'));
+        console.log('Magic-related keys after:', afterKeys);
+        afterKeys.forEach(key => {
+          console.log(`  ${key}:`, localStorage.getItem(key)?.substring(0, 100));
+        });
+      } catch (redirectError) {
+        console.error('Error during loginWithRedirect:', redirectError);
+        throw redirectError; // Re-throw to be caught by outer catch
+      }
       
       // Note: The flow will redirect away from the current page,
       // so the code below won't execute until the user returns
