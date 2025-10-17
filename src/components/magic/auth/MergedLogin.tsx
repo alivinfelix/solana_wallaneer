@@ -458,7 +458,7 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
       </div>
 
       {/* Login Content - Full screen centered */}
-      <div className="flex-1 flex items-center justify-center p-6">
+      <div className="flex-1 flex items-center justify-center p-6 overflow-y-auto">
         <div className="w-full max-w-md md:bg-[#1e1e1e] md:rounded-xl md:pt-[100px] md:pr-[40px] md:pl-[40px] md:shadow-lg">
           {/* Desktop title */}
           <div className="hidden md:block mb-8">
@@ -525,7 +525,7 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
           </div>
 
           {/* Social Login Section */}
-          <div className="flex flex-col space-y-4">
+          <div className="flex flex-col space-y-4 pb-4">
             <SocialButton
               provider="google"
               isLoading={isSocialLoading && currentProvider === 'google'}
@@ -535,7 +535,6 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
               provider="twitter"
               isLoading={isSocialLoading && currentProvider === 'twitter'}
               onClick={handleSocialLogin}
-              className="!mb-[100px]"
             />
 
             {/* Original Telegram Button (as backup) */}
@@ -547,6 +546,33 @@ const MergedLogin = ({ token, setToken, showLoginOptions, setShowLoginOptions }:
               />
             </div> */}
           </div>
+          
+          {/* Contact Information - visible on both mobile and desktop */}
+          {/* <div className="mt-6 pt-4 border-t border-[#f7bc1542]">
+            <div className="flex items-center justify-center space-x-6 text-sm text-[#979797]">
+              <a
+                href="https://x.com/wallaneer"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center hover:text-[#f5bd13] transition-colors"
+              >
+                <svg width="20" height="20" viewBox="0 0 600 600" fill="currentColor" className="mr-1">
+                  <path d="M403.6 89.6h90.1L356 273.5l152.5 237H359.6l-103.9-155.9-118.8 155.9H47.2l146.2-191.9L49.7 89.6h200.8l94.4 141.9 113.6-141.9zm-31.5 382.7h49.9L185.4 119.7h-53.8l240.5 352.6z"/>
+                </svg>
+                Wallaneer
+              </a>
+              <span>|</span>
+              <a
+                href="mailto:contact@wallaneer.io"
+                className="flex items-center hover:text-[#f5bd13] transition-colors"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="mr-1">
+                  <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 2v.01L12 13 4 6.01V6h16zm-16 12V8.83l7.88 6.88a1 1 0 0 0 1.24 0L20 8.83V18H4z"/>
+                </svg>
+                contact@wallaneer.io
+              </a>
+            </div>
+          </div> */}
           {/* <div className="mt-4 text-xs text-gray-400 text-center">
             <p>Note: Telegram offers direct login widget above, or Magic popup below</p>
           </div> */}
