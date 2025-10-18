@@ -133,24 +133,32 @@ const Login = ({ token, setToken }: LoginProps) => {
             showLoginOptions={showLoginOptions}
             setShowLoginOptions={setShowLoginOptions}
           />
-          <div className="absolute bottom-8 left-0 w-full flex flex-col items-center space-y-2 z-30">
-            <div className="flex items-center justify-center space-x-6 text-sm text-[#979797]">
+          
+        </div>
+        <div className="w-full px-6 pb-8">
+          <div className="max-w-sm mx-auto">
+            <p className="text-center text-gray-400 text-sm mb-4">Need help?</p>
+            <div className="flex items-center justify-center gap-6">
               <a
                 href="https://x.com/magallaneer"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center hover:text-[#f5bd13] transition-colors"
+                className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#f7bc1517] border border-[#f7bc1533] hover:bg-[#f7bc1533] hover:border-[#f7bc15] transition-all group"
               >
-                <svg width="20" height="20" viewBox="0 0 600 600" fill="currentColor" className="mr-1"><path d="M403.6 89.6h90.1L356 273.5l152.5 237H359.6l-103.9-155.9-118.8 155.9H47.2l146.2-191.9L49.7 89.6h200.8l94.4 141.9 113.6-141.9zm-31.5 382.7h49.9L185.4 119.7h-53.8l240.5 352.6z" /></svg>
-                Wallaneer
+                <svg width="18" height="18" viewBox="0 0 600 600" fill="currentColor" className="text-[#f7bc15] group-hover:scale-110 transition-transform">
+                  <path d="M403.6 89.6h90.1L356 273.5l152.5 237H359.6l-103.9-155.9-118.8 155.9H47.2l146.2-191.9L49.7 89.6h200.8l94.4 141.9 113.6-141.9zm-31.5 382.7h49.9L185.4 119.7h-53.8l240.5 352.6z"/>
+                </svg>
+                <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">@magallaneer</span>
               </a>
-              <span>|</span>
+              
               <a
                 href="mailto:contact@wallaneer.io"
-                className="flex items-center hover:text-[#f5bd13] transition-colors"
+                className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#f7bc1517] border border-[#f7bc1533] hover:bg-[#f7bc1533] hover:border-[#f7bc15] transition-all group"
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="mr-1"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 2v.01L12 13 4 6.01V6h16zm-16 12V8.83l7.88 6.88a1 1 0 0 0 1.24 0L20 8.83V18H4z" /></svg>
-                contact@wallaneer.io
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-[#f7bc15] group-hover:scale-110 transition-transform">
+                  <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 2v.01L12 13 4 6.01V6h16zm-16 12V8.83l7.88 6.88a1 1 0 0 0 1.24 0L20 8.83V18H4z"/>
+                </svg>
+                <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">Email</span>
               </a>
             </div>
           </div>
