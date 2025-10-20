@@ -95,14 +95,14 @@ const Login = ({ token, setToken }: LoginProps) => {
             {/* Legal Links */}
             <div className="flex items-center justify-center gap-3 text-xs mt-6">
               <a 
-                href="/terms" 
+                //href="/terms" 
                 className="text-gray-400 hover:text-[#f7bc15] transition-colors"
               >
                 Terms of Use
               </a>
               <span className="text-gray-600">|</span>
               <a 
-                href="/privacy" 
+                //href="/privacy" 
                 className="text-gray-400 hover:text-[#f7bc15] transition-colors"
               >
                 Privacy Policy
@@ -191,14 +191,14 @@ const Login = ({ token, setToken }: LoginProps) => {
             {/* Legal Links */}
             <div className="flex items-center justify-center gap-3 text-xs mt-6">
               <a 
-                href="/terms" 
+                //href="/terms" 
                 className="text-gray-400 hover:text-[#f7bc15] transition-colors"
               >
                 Terms of Use
               </a>
               <span className="text-gray-600">|</span>
               <a 
-                href="/privacy" 
+                //href="/privacy" 
                 className="text-gray-400 hover:text-[#f7bc15] transition-colors"
               >
                 Privacy Policy
