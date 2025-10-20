@@ -60,10 +60,15 @@ const Login = ({ token, setToken }: LoginProps) => {
             setShowLoginOptions={setShowLoginOptions}
           />
         </div>
-        {/* Simple & Smart Contact Section */}
+        {/* Footer Section */}
         <div className="w-full px-6 pb-8">
           <div className="max-w-sm mx-auto">
-            <p className="text-center text-gray-400 text-sm mb-4">Need help?</p>
+            <p className="text-xs text-gray-500 mb-2 text-center">
+              © 2025 Wallaneer. Powered by Magallaneer.
+            </p>
+            <p className="text-xs text-[#f7bc15] font-medium mb-6 text-center">
+              Multi-chain. Secure. Borderless.
+            </p>
             <div className="flex items-center justify-center gap-6">
               <a
                 href="https://x.com/magallaneer"
@@ -74,7 +79,7 @@ const Login = ({ token, setToken }: LoginProps) => {
                 <svg width="18" height="18" viewBox="0 0 600 600" fill="currentColor" className="text-[#f7bc15] group-hover:scale-110 transition-transform">
                   <path d="M403.6 89.6h90.1L356 273.5l152.5 237H359.6l-103.9-155.9-118.8 155.9H47.2l146.2-191.9L49.7 89.6h200.8l94.4 141.9 113.6-141.9zm-31.5 382.7h49.9L185.4 119.7h-53.8l240.5 352.6z"/>
                 </svg>
-                <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">@magallaneer</span>
+                <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">@wallaneer</span>
               </a>
               
               <a
@@ -87,8 +92,25 @@ const Login = ({ token, setToken }: LoginProps) => {
                 <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">Email</span>
               </a>
             </div>
+            {/* Legal Links */}
+            <div className="flex items-center justify-center gap-3 text-xs mt-6">
+              <a 
+                href="/terms" 
+                className="text-gray-400 hover:text-[#f7bc15] transition-colors"
+              >
+                Terms of Use
+              </a>
+              <span className="text-gray-600">|</span>
+              <a 
+                href="/privacy" 
+                className="text-gray-400 hover:text-[#f7bc15] transition-colors"
+              >
+                Privacy Policy
+              </a>
+            </div>
           </div>
         </div>
+        
       </div>
 
       {/* Desktop Layout - Same structure as mobile, different sizes */}
@@ -137,7 +159,12 @@ const Login = ({ token, setToken }: LoginProps) => {
         </div>
         <div className="w-full px-6 pb-8">
           <div className="max-w-sm mx-auto">
-            <p className="text-center text-gray-400 text-sm mb-4">Need help?</p>
+            <p className="text-xs text-gray-500 mb-2 text-center">
+              © 2025 Wallaneer. Powered by Magallaneer.
+            </p>
+            <p className="text-xs text-[#f7bc15] font-medium mb-6 text-center">
+              Multi-chain. Secure. Borderless.
+            </p>
             <div className="flex items-center justify-center gap-6">
               <a
                 href="https://x.com/magallaneer"
@@ -148,7 +175,7 @@ const Login = ({ token, setToken }: LoginProps) => {
                 <svg width="18" height="18" viewBox="0 0 600 600" fill="currentColor" className="text-[#f7bc15] group-hover:scale-110 transition-transform">
                   <path d="M403.6 89.6h90.1L356 273.5l152.5 237H359.6l-103.9-155.9-118.8 155.9H47.2l146.2-191.9L49.7 89.6h200.8l94.4 141.9 113.6-141.9zm-31.5 382.7h49.9L185.4 119.7h-53.8l240.5 352.6z"/>
                 </svg>
-                <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">@magallaneer</span>
+                <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">@wallaneer</span>
               </a>
               
               <a
@@ -159,6 +186,22 @@ const Login = ({ token, setToken }: LoginProps) => {
                   <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 2v.01L12 13 4 6.01V6h16zm-16 12V8.83l7.88 6.88a1 1 0 0 0 1.24 0L20 8.83V18H4z"/>
                 </svg>
                 <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">Email</span>
+              </a>
+            </div>
+            {/* Legal Links */}
+            <div className="flex items-center justify-center gap-3 text-xs mt-6">
+              <a 
+                href="/terms" 
+                className="text-gray-400 hover:text-[#f7bc15] transition-colors"
+              >
+                Terms of Use
+              </a>
+              <span className="text-gray-600">|</span>
+              <a 
+                href="/privacy" 
+                className="text-gray-400 hover:text-[#f7bc15] transition-colors"
+              >
+                Privacy Policy
               </a>
             </div>
           </div>
